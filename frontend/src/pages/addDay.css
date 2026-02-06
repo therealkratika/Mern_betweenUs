@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* ================== WRAPPER ================== */
+.addday-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fff0f5, #f0f8ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* ================== CARD ================== */
+.addday-card {
+  width: 100%;
+  max-width: 680px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(18px);
+  border-radius: 24px;
+  padding: 36px;
+  box-shadow: 0 15px 40px rgba(255, 182, 193, 0.25);
+  border: 1px solid rgba(255, 182, 193, 0.3);
+}
+
+/* ================== HEADER ================== */
+.addday-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.addday-header h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ff69b4;
+}
+
+/* ================== ICON BUTTON ================== */
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 182, 193, 0.4);
+  background: #fff;
+  color: #ff69b4;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ================== FIELDS ================== */
+.field {
+  margin-bottom: 22px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ff69b4;
+}
+
+/* ================== INPUTS ================== */
+input,
+textarea {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 182, 193, 0.4);
+  font-size: 14px;
+  color: #ff69b4;
+  background: #fff;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 105, 180, 0.45);
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #ff69b4;
+  box-shadow: 0 0 0 3px rgba(255, 182, 193, 0.25);
+}
+
+textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+/* ================== UPLOAD ================== */
+.upload-box {
+  border: 2px dashed rgba(255, 182, 193, 0.5);
+  border-radius: 20px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  background: #fff;
+}
+
+.upload-box span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c77eb5;
+}
+
+/* ================== PHOTOS ================== */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.photo-item {
+  aspect-ratio: 1;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 182, 193, 0.4);
+}
+
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ================== EMOTIONS ================== */
+.emotion-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.emotion {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 182, 193, 0.4);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff69b4;
+  cursor: pointer;
+}
+
+.emotion.active {
+  background: #ffb6c1;
+  color: #fff;
+  border-color: #ff69b4;
+}
+
+/* ================== ACTIONS ================== */
+.actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+.btn.primary {
+  background: #ff69b4;
+  color: #fff;
+}
+
+.btn.secondary {
+  background: #fff;
+  border: 1.5px solid rgba(255, 182, 193, 0.4);
+  color: #ff69b4;
+}
+
+/* ================== MOBILE ================== */
+@media (max-width: 768px) {
+  .addday-card {
+    padding: 28px;
+  }
+
+  .addday-header h2 {
+    font-size: 22px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,197 @@
+/* =========================
+   GLOBAL WRAPPER
+========================= */
+.letters-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fdfcfb, #f5ebe0, #e8dff0);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Inter", sans-serif;
+}
+
+/* =========================
+   HEADER
+========================= */
+.letters-header {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.letters-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #4a4a4a;
+}
+
+.letters-header button {
+  background: #c8b5d4;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.letters-header button:hover {
+  background: #b8a5c4;
+  transform: scale(1.05);
+}
+
+/* =========================
+   EMPTY STATE
+========================= */
+.empty {
+  color: #8a8a8a;
+  margin-top: 60px;
+  font-size: 15px;
+}
+
+/* =========================
+   LETTER CARD
+========================= */
+.letter-card {
+  width: 100%;
+  max-width: 720px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(200, 181, 212, 0.35);
+}
+
+.letter-card h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #4a4a4a;
+}
+
+.letter-card p {
+  margin: 0;
+  font-size: 13px;
+  color: #8a8a8a;
+}
+
+/* Unlocked */
+.letter-card.open {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.letter-card.open:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Locked */
+.letter-card.locked {
+  background: rgba(249, 245, 242, 0.6);
+  cursor: not-allowed;
+}
+
+/* =========================
+   WRITE LETTER FORM
+========================= */
+form {
+  width: 100%;
+  max-width: 720px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid rgba(200, 181, 212, 0.3);
+}
+
+input,
+textarea {
+  border-radius: 14px;
+  border: 1px solid rgba(200, 181, 212, 0.4);
+  padding: 12px 14px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #c8b5d4;
+}
+
+textarea {
+  resize: none;
+  min-height: 160px;
+}
+
+form button {
+  background: #c8b5d4;
+  border: none;
+  border-radius: 18px;
+  padding: 14px;
+  font-size: 15px;
+  color: white;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+form button:hover {
+  background: #b8a5c4;
+}
+
+/* =========================
+   OPEN LETTER VIEW
+========================= */
+.letter-content {
+  max-width: 720px;
+  margin-top: 20px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 24px;
+  border: 1px solid rgba(200, 181, 212, 0.3);
+  font-size: 16px;
+  line-height: 1.6;
+  color: #4a4a4a;
+  white-space: pre-wrap;
+}
+
+/* Close button */
+.letters-wrapper > button {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #8a8a8a;
+}
+
+.letters-wrapper > button:hover {
+  color: #4a4a4a;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 600px) {
+  .letters-header h2 {
+    font-size: 20px;
+  }
+
+  .letter-card h4 {
+    font-size: 15px;
+  }
+
+  .letter-content {
+    font-size: 15px;
+    padding: 18px;
+  }
+}

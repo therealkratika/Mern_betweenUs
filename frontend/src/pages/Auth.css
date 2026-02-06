@@ -1,0 +1,112 @@
+/* ========== AUTH LAYOUT ========== */
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    #fdfcfb,
+    #f5ebe0,
+    #e8dff0
+  );
+  padding: 20px;
+}
+
+.auth-wrapper h2 {
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  color: #4a4a4a;
+  text-align: center;
+}
+
+/* ========== CARD ========== */
+.auth-wrapper form {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  padding: 30px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ========== INPUTS ========== */
+.auth-wrapper input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #d8cfe2;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.auth-wrapper input:focus {
+  border-color: #c8b5d4;
+  box-shadow: 0 0 0 2px rgba(200, 181, 212, 0.2);
+}
+
+/* ========== BUTTON ========== */
+.auth-wrapper button {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #c8b5d4;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-wrapper button:hover {
+  background: #b8a5c4;
+}
+
+.auth-wrapper button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ========== LINKS ========== */
+.forgot-link {
+  font-size: 0.85rem;
+  text-align: right;
+  color: #8a8a8a;
+  cursor: pointer;
+  margin-top: -5px;
+}
+
+.forgot-link:hover {
+  color: #c8b5d4;
+  text-decoration: underline;
+}
+
+/* ========== MESSAGES ========== */
+.success {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b9b76;
+}
+
+.error {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #c94b4b;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 480px) {
+  .auth-wrapper form {
+    padding: 24px;
+  }
+
+  .auth-wrapper h2 {
+    font-size: 1.4rem;
+  }
+}
