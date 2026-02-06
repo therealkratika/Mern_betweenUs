@@ -24,3 +24,7 @@ export const forgotPassword = (email) =>
 
 export const resetPassword = (token, password) =>
   api.post(`/auth/reset-password/${token}`, { password });
+export const deleteAccount = async () => {
+  const res = await api.delete("/auth/delete-account");
+  return res.data;
+};

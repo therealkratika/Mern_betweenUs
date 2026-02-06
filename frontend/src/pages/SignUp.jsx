@@ -16,11 +16,7 @@ export default function Signup({ onSignup }) {
 
     try {
       await onSignup(name, email, password);
-
-      // ✅ IMPORTANT
       setLoading(false);
-      // DO NOT navigate
-      // App.jsx will redirect automatically
 
     } catch (err) {
       setError(

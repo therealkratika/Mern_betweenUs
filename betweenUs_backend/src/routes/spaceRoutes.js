@@ -36,7 +36,7 @@ router.post("/create", protect, async (req, res) => {
       partnerId: null,
       inviteToken: null,
       inviteExpiresAt: null,
-      invitedEmail: null,
+      inviteEmail: null,
     });
 
     user.spaceId = space._id;
@@ -52,11 +52,6 @@ router.post("/create", protect, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
-/* ======================================================
-   SEND INVITE
-====================================================== */
 router.post("/invite", protect, async (req, res) => {
   try {
     const { partnerEmail } = req.body;
@@ -79,7 +74,7 @@ router.post("/invite", protect, async (req, res) => {
       return res.status(400).json({ message: "Partner already joined" });
     }
 
-    // Create invite ONCE
+    // Create invite once
     if (!space.inviteToken) {
       space.inviteToken = uuidv4();
       space.inviteExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
@@ -88,8 +83,8 @@ router.post("/invite", protect, async (req, res) => {
     }
 
     const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
-
-    await sendMail({
+    try {
+     await sendMail({
       to: partnerEmail,
       subject: "💜 You've been invited to a private space",
       html: `
@@ -100,9 +95,13 @@ router.post("/invite", protect, async (req, res) => {
         </a>
         <p>This link expires in 48 hours.</p>
       `
-    });
+      });
+    } catch (mailErr) {
+      console.error("❌ EMAIL ERROR:", mailErr);
+      return res.status(500).json({ message: "Failed to send email" });
+    }
 
-    return res.json({
+    res.json({
       message: "Invite sent successfully",
       inviteSent: true,
       inviteEmail: partnerEmail,
@@ -111,16 +110,16 @@ router.post("/invite", protect, async (req, res) => {
 
   } catch (err) {
     console.error("❌ INVITE ERROR:", err);
-    res.status(500).json({ message: "Failed to send invite" });
+    res.status(500).json({ message: "Server error" });
   }
 });
-
-/* ======================================================
-   RESEND INVITE
-====================================================== */
 router.post("/invite/resend", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user || !user.spaceId) {
+      return res.status(404).json({ message: "User or space not found" });
+    }
+
     const space = await Space.findById(user.spaceId);
 
     if (!space || !space.inviteToken || !space.inviteEmail) {
@@ -129,25 +128,30 @@ router.post("/invite/resend", protect, async (req, res) => {
 
     const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
 
-    await sendMail({
-      to: space.inviteEmail,
-      subject: "💜 Reminder: Invitation to your private space",
-      html: `<a href="${inviteLink}">Accept Invitation</a>`
-    });
+    try {
+      await sendMail({
+        to: space.inviteEmail,
+        subject: "💜 Invitation Reminder",
+        html: `<a href="${inviteLink}">Accept Invitation</a>`
+      });
+    } catch (mailErr) {
+      console.error("❌ EMAIL ERROR:", mailErr);
+      return res.status(500).json({ message: "Failed to resend email" });
+    }
 
     res.json({ message: "Invite resent" });
+
   } catch (err) {
     console.error("❌ RESEND ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
-
-/* ======================================================
-   CANCEL INVITE
-====================================================== */
 router.post("/invite/cancel", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+   const user = await User.findById(req.user.id);
+if (!user || !user.spaceId) {
+  return res.status(404).json({ message: "User or space not found" });
+}
     const space = await Space.findById(user.spaceId);
 
     if (!space) {
@@ -205,11 +209,6 @@ router.post("/accept/:token", protect, async (req, res) => {
     partnerJoined: true
   });
 });
-
-
-/* ======================================================
-   SPACE STATUS
-====================================================== */
 router.get("/status", protect, async (req, res) => {
   const user = await User.findById(req.user.id);
 

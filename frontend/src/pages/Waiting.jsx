@@ -55,11 +55,9 @@ export default function Waiting() {
     navigate("/invite");
   };
 
-  /* ================= UI ================= */
   return (
     <div className="waiting-wrapper">
       <div className="waiting-card">
-        {/* ICON */}
         <div className="waiting-icon">
           ❤️
           <span className="mail-badge">✉️</span>
@@ -74,14 +72,10 @@ export default function Waiting() {
         <p className="muted">
           Waiting for them to accept and join your shared space…
         </p>
-
-        {/* STATUS */}
         <div className="status-box">
           <p>✅ Email sent successfully</p>
           <p className="pulse">⏳ Waiting for acceptance</p>
         </div>
-
-        {/* LINK */}
         <div className="link-box">
           <input value={inviteLink} readOnly />
           <button onClick={handleCopy}>

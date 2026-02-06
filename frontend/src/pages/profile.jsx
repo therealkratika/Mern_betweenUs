@@ -11,12 +11,9 @@ export default function Profile() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   if (!user) return null;
-
-  /* =========================
-     CHANGE PASSWORD
-  ========================= */
   const changePassword = async () => {
     try {
       await api.put("/auth/change-password", {
@@ -38,18 +35,28 @@ export default function Profile() {
      DELETE ACCOUNT
   ========================= */
   const deleteAccount = async () => {
+    if (deleting) return;
+
     const confirmDelete = window.confirm(
-      "This will permanently delete your account and shared space. Continue?"
+      "Your account will be scheduled for deletion and permanently removed after 30 days. You can restore it by logging in again. Continue?"
     );
 
     if (!confirmDelete) return;
 
     try {
+      setDeleting(true);
+
+      // ⚠️ Change this if your backend is mounted under /auth
       await api.delete("/auth/delete-account");
+
+      alert("Account scheduled for deletion");
       logout();
       navigate("/");
     } catch (err) {
-      alert("Failed to delete account");
+      setDeleting(false);
+      alert(
+        err.response?.data?.message || "Failed to delete account"
+      );
     }
   };
 
@@ -58,14 +65,13 @@ export default function Profile() {
       <div className="profile-card">
         <h2>👤 Profile</h2>
 
-        {/* YOU */}
+        {/* USER INFO */}
         <section>
           <h4>You</h4>
           <p><strong>Name:</strong> {user.name}</p>
           <p><strong>Email:</strong> {user.email}</p>
         </section>
 
-        {/* PARTNER */}
         <section>
           <h4>Your Partner</h4>
           {user.partnerJoined ? (
@@ -75,7 +81,6 @@ export default function Profile() {
           )}
         </section>
 
-        {/* CHANGE PASSWORD */}
         <section>
           <h4>Change Password</h4>
 
@@ -96,16 +101,20 @@ export default function Profile() {
           <button onClick={changePassword}>
             Update Password
           </button>
+
+          {message && <p className="message">{message}</p>}
         </section>
-
-        {message && <p className="message">{message}</p>}
-
-        {/* ACTIONS */}
         <section className="danger">
-          <button onClick={logout}>Logout</button>
+          <button onClick={logout}>
+            Logout
+          </button>
 
-          <button className="delete" onClick={deleteAccount}>
-            Delete Account
+          <button
+            className="delete"
+            onClick={deleteAccount}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete Account"}
           </button>
         </section>
       </div>
