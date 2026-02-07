@@ -7,7 +7,16 @@ const authRoutes = require("./src/routes/authRoutes");
 const spaceRoutes = require("./src/routes/spaceRoutes");
 const dayMemoryRoutes = require("./src/routes/dayMemoryRoutes");
 
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://mern-betweenus-1.onrender.com"
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.use("/auth", authRoutes);

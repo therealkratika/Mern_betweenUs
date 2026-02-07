@@ -195,37 +195,55 @@ router.put("/change-password",protect,async(req,res)=>{
   res.json({messahe: "Password Updated"});
 });
 router.delete("/delete-account", protect, async (req, res) => {
-  const user = await User.findById(req.user.id);
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  try {
+    const user = await User.findById(req.user.id);
 
-  const deleteAt = new Date(
-    Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 days
-  );
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  // mark this user
-  user.isScheduledForDeletion = true;
-  user.deleteAt = deleteAt;
-  await user.save();
-
-  // mark partner if exists
-  if (user.spaceId) {
-    const space = await Space.findById(user.spaceId);
-    if (space?.partnerId) {
-      await User.findByIdAndUpdate(space.partnerId, {
-        isScheduledForDeletion: true,
-        deleteAt
+    // 🚫 Already scheduled
+    if (user.isScheduledForDeletion) {
+      return res.status(400).json({
+        message: "Account is already scheduled for deletion"
       });
     }
+
+    // ⏳ 30 days from now
+    const deleteAt = new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000
+    );
+
+    user.isScheduledForDeletion = true;
+    user.deleteAt = deleteAt;
+    await user.save();
+
+    // 🧩 Schedule partner deletion (same space)
+    if (user.spaceId) {
+      const space = await Space.findById(user.spaceId);
+
+      if (space) {
+        const partnerId =
+          space.user1?.toString() === user._id.toString()
+            ? space.user2
+            : space.user1;
+
+        if (partnerId) {
+          await User.findByIdAndUpdate(partnerId, {
+            isScheduledForDeletion: true,
+            deleteAt
+          });
+        }
+      }
+    }
+
+    res.json({
+      message:
+        "Account scheduled for deletion. Login within 30 days to restore."
+    });
+  } catch (err) {
+    console.error("❌ DELETE ACCOUNT ERROR", err);
+    res.status(500).json({ message: "Server error" });
   }
-
-  res.json({
-    message:
-      "Account scheduled for deletion. Login within 30 days to restore."
-  });
 });
-
-
-
 module.exports = router;

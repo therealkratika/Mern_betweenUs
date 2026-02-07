@@ -17,28 +17,23 @@ export default function InvitePartner() {
     setConfirm(true);
   };
 
-  const handleConfirmInvite = async () => {
-    try {
-      setLoading(true);
-      setError("");
+ const handleConfirmInvite = async () => {
+  try {
+    setLoading(true);
+    setError("");
 
-      // ✅ send email correctly
-      await sendInvite(email);
+    await sendInvite(email);
 
-      setSent(true);
-      setLoading(false);
+    setSent(true);
+    navigate("/waiting", { replace: true });
 
-      // ✅ go to waiting page
-      navigate("/waiting", { replace: true });
-
-    } catch (err) {
-      setError(
-        err?.response?.data?.message || "Failed to send invitation"
-      );
-      setLoading(false);
-    }
-  };
-
+  } catch (err) {
+    // only true API failures land here
+    setError("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="invite-wrapper">
       <div className="invite-card fade-up">

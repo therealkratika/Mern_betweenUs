@@ -18,12 +18,12 @@ export const getSpaceStatus = async () => {
   return res.data;
 };
 
-export const sendInvite = async (email) => {
-  const res = await api.post("/spaces/invite", {
-    partnerEmail: email,
+export const sendInvite = (email) => {
+  return api.post("/spaces/invite", {
+    partnerEmail: email
   });
-  return res.data;
 };
+
 
 export const resendInvite = async () => {
   const res = await api.post("/spaces/invite/resend");

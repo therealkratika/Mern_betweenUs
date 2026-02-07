@@ -1,24 +1,41 @@
-const nodemailer = require("nodemailer");
+const axios = require("axios");
 
 const sendMail = async ({ to, subject, html }) => {
-  if (!to) {
-    throw new Error("No recipient email provided");
+  // If key is missing, skip email safely
+  if (!process.env.BREVO_API_KEY) {
+    console.warn("⚠️ BREVO_API_KEY missing. Email skipped.");
+    return;
   }
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
+  try {
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: {
+          name: "BetweenUs",
+          email: process.env.EMAIL_FROM || "noreply@betweenus.app"
+        },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json"
+        },
+        timeout: 10000
+      }
+    );
 
-  await transporter.sendMail({
-    from: `"Between Us 💜" <${process.env.EMAIL_USER}>`,
-    to,
-    subject,
-    html
-  });
+    console.log("✅ Email sent to:", to);
+  } catch (err) {
+    console.error(
+      "❌ BREVO EMAIL ERROR:",
+      err.response?.data || err.message
+    );
+    // IMPORTANT: never throw
+  }
 };
 
 module.exports = sendMail;
