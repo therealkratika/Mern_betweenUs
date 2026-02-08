@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useUser } from "./context/UserContext";
-// Pages
+
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
@@ -36,19 +36,10 @@ function PublicRoute({ children }) {
 
   return <Navigate to="/timeline" replace />;
 }
-
-/**
- * 🔐 AUTH REQUIRED
- */
 function PrivateRoute({ children }) {
   const { user } = useUser();
   return user ? children : <Navigate to="/login" replace />;
 }
-
-/**
- * 🏗 REQUIRE SPACE
- * Used for Invite page
- */
 function RequireSpace({ children }) {
   const { user } = useUser();
 
@@ -57,14 +48,6 @@ function RequireSpace({ children }) {
 
   return children;
 }
-
-/**
- * ⏳ WAITING PAGE
- * Waiting page itself decides:
- * - Invite
- * - Waiting
- * - Timeline
- */
 function RequireWaiting({ children }) {
   const { user } = useUser();
 
@@ -79,22 +62,12 @@ function RequireTimeline({ children }) {
   const { user } = useUser();
 
   if (!user) return <Navigate to="/login" replace />;
-
-  // 🔥 This is the key condition
   if (!user.spaceId) return <Navigate to="/create-space" replace />;
 
   return children;
 }
-
-
-/* =========================
-   APP
-========================= */
-
 export default function App() {
   const { login } = useUser();
-
-  /* ---------- AUTH ---------- */
 
   const handleLogin = async (email, password) => {
     const data = await loginUser(email, password);
@@ -107,13 +80,10 @@ export default function App() {
     login(data);
     return data;
   };
-
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* 🔗 INVITE LINKS (NO GUARDS) */}
-        <Route path="/invite/:token/*" element={<InvitationAcceptance />} />
+        <Route path="/invite/:token" element={<InvitationAcceptance />} />
         <Route path="/invite/:token/signup" element={<InviteSignup />} />
 
         {/* 🌍 PUBLIC */}
@@ -146,7 +116,6 @@ export default function App() {
           }
         />
 
-        {/* 🏗 CREATE SPACE */}
         <Route
           path="/create-space"
           element={
@@ -156,7 +125,6 @@ export default function App() {
           }
         />
 
-        {/* 📩 INVITE PARTNER */}
         <Route
           path="/invite"
           element={
@@ -217,7 +185,7 @@ export default function App() {
 <Route path="/letters/:id" element={<RequireTimeline><LetterDetails /></RequireTimeline>} />
 <Route path = "/profile" element={<RequireTimeline><Profile/></RequireTimeline>}/>
         {/* ❌ FALLBACK */}
-        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
+       <Route path="*" element={<div>Page not found</div>} />
 
       </Routes>
     </BrowserRouter>

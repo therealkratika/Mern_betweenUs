@@ -78,7 +78,6 @@ router.post("/invite", protect, async (req, res) => {
     }
 
     const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
-    // SEND EMAIL (NON-BLOCKING)
 try {
   await sendMail({
     to: partnerEmail,
@@ -94,10 +93,7 @@ try {
   });
 } catch (mailErr) {
   console.error("❌ EMAIL ERROR (ignored):", mailErr.message);
-  // ❗ DO NOT return / throw
 }
-
-// ALWAYS respond success
 return res.json({
   message: "Invite created",
   inviteSent: true,
