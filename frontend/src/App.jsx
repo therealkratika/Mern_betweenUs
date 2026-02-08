@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useUser } from "./context/UserContext";
 
 import Landing from "./pages/Landing";
@@ -81,7 +81,7 @@ export default function App() {
     return data;
   };
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/invite/:token" element={<InvitationAcceptance />} />
         <Route path="/invite/:token/signup" element={<InviteSignup />} />
@@ -188,6 +188,6 @@ export default function App() {
        <Route path="*" element={<div>Page not found</div>} />
 
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
