@@ -168,7 +168,7 @@ router.post("/forgot-password", async(req,res)=>{
     });
     res.json({message: "Reset Link sent"});
 });
-router.post("/reset-password/:token",async(req,res)=>{
+router.post("/#reset-password/:token",async(req,res)=>{
   const{password} = req.body;
   const user = await User.findOne({
     resetPasswordToken: req.params.token,
