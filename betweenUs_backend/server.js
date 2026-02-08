@@ -35,13 +35,14 @@ mongoose.connect(process.env.MONGO_URI).then(()=>{
     app.listen(5000,()=>{
         console.log("server is running on port 5000");
     });
-    app.use(express.static(path.join(__dirname, "frontend/dist")));
+   app.use(express.static(path.join(__dirname, "dist")));
 
-app.get( (req, res) => {
+app.use((req, res) => {
   res.sendFile(
-    path.join(__dirname, "./frontend/dist/index.html")
+    path.join(__dirname, "dist/index.html")
   );
 });
+
 }).catch((err)=>{
     console.error("DB connection failed",err);
 });
