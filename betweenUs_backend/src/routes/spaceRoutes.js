@@ -77,7 +77,7 @@ router.post("/invite", protect, async (req, res) => {
       await space.save();
     }
 
-    const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
+    const inviteLink = `${process.env.FRONTEND_URL}/#invite/${space.inviteToken}`;
 try {
   await sendMail({
     to: partnerEmail,
