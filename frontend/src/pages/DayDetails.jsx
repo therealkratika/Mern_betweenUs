@@ -154,20 +154,13 @@ export default function DayDetail() {
             <div className="image-placeholder">📷</div>
           )}
 
-          {memory.photos.length > 1 && (
-            <>
-              <button className="nav-btn left" onClick={prevPhoto}>
-                ‹
-              </button>
-              <button className="nav-btn right" onClick={nextPhoto}>
-                ›
-              </button>
+         {memory.photos.length > 1 && (
+  <>
+    <button className="nav-btn left" onClick={prevPhoto}>‹</button>
+    <button className="nav-btn right" onClick={nextPhoto}>›</button>
+  </>
+)}
 
-              <div className="photo-count">
-                {currentPhotoIndex + 1} / {memory.photos.length}
-              </div>
-            </>
-          )}
         </div>
 
         {/* THUMBNAILS */}

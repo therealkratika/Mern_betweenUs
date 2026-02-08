@@ -123,21 +123,35 @@
   display: block;
 }
 
+/* =====================
+   NAV BUTTONS (DEFAULT)
+===================== */
 .nav-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 250, 252, 0.95);
+
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(255, 250, 252, 0.9);
   border: 1px solid rgba(255, 182, 193, 0.4);
   border-radius: 50%;
+
   font-size: 22px;
-  padding: 12px 16px;
   cursor: pointer;
   color: #d4869c;
+
+  backdrop-filter: blur(8px);
 }
 
 .nav-btn.left { left: 16px; }
 .nav-btn.right { right: 16px; }
+
 
 .photo-count {
   position: absolute;
@@ -261,6 +275,26 @@
    RESPONSIVE
 ===================== */
 @media (max-width: 768px) {
+  .nav-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 182, 193, 0.3);
+  }
+
+  .nav-btn.left {
+    left: 8px;
+  }
+
+  .nav-btn.right {
+    right: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  
   .daydetail-container {
     max-height: calc(100dvh - 24px);
   }
