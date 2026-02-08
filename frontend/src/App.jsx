@@ -113,7 +113,7 @@ export default function App() {
       <Routes>
 
         {/* 🔗 INVITE LINKS (NO GUARDS) */}
-        <Route path="/invite/:token" element={<InvitationAcceptance />} />
+        <Route path="/invite/:token/*" element={<InvitationAcceptance />} />
         <Route path="/invite/:token/signup" element={<InviteSignup />} />
 
         {/* 🌍 PUBLIC */}
@@ -217,7 +217,7 @@ export default function App() {
 <Route path="/letters/:id" element={<RequireTimeline><LetterDetails /></RequireTimeline>} />
 <Route path = "/profile" element={<RequireTimeline><Profile/></RequireTimeline>}/>
         {/* ❌ FALLBACK */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
 
       </Routes>
     </BrowserRouter>
