@@ -12,16 +12,12 @@ router.post("/create", protect, async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
-    // 🔥 CRITICAL FIX
     if (user.spaceId) {
       const existingSpace = await Space.findById(user.spaceId);
 
       if (existingSpace) {
         return res.status(400).json({ message: "Space already exists" });
       }
-
-      // 🧹 orphaned space reference cleanup
       user.spaceId = null;
       await user.save();
     }
@@ -36,14 +32,13 @@ router.post("/create", protect, async (req, res) => {
 
     user.spaceId = space._id;
     await user.save();
-
     res.status(201).json({
       spaceId: space._id,
       partnerJoined: false,
     });
 
   } catch (err) {
-    console.error("❌ CREATE SPACE ERROR:", err);
+    console.error("CREATE SPACE ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -68,8 +63,6 @@ router.post("/invite", protect, async (req, res) => {
     if (space.partnerId) {
       return res.status(400).json({ message: "Partner already joined" });
     }
-
-    // Create invite once
     if (!space.inviteToken) {
       space.inviteToken = uuidv4();
       space.inviteExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
@@ -77,8 +70,7 @@ router.post("/invite", protect, async (req, res) => {
       await space.save();
     }
 
-    const inviteLink =
-  `${process.env.FRONTEND_URL}/#/invite/${space.inviteToken}`;
+    const inviteLink = `${process.env.FRONTEND_URL}/#/invite/${space.inviteToken}`;
 
 try {
   await sendMail({
@@ -94,7 +86,7 @@ try {
     `
   });
 } catch (mailErr) {
-  console.error("❌ EMAIL ERROR (ignored):", mailErr.message);
+  console.error("EMAIL ERROR (ignored):", mailErr.message);
 }
 return res.json({
   message: "Invite created",
@@ -105,7 +97,7 @@ return res.json({
 
 
   } catch (err) {
-    console.error("❌ INVITE ERROR:", err);
+    console.error("INVITE ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -131,14 +123,14 @@ router.post("/invite/resend", protect, async (req, res) => {
         html: `<a href="${inviteLink}">Accept Invitation</a>`
       });
     } catch (mailErr) {
-  console.error("❌ EMAIL ERROR (ignored):", mailErr.message);
+  console.error("EMAIL ERROR (ignored):", mailErr.message);
 }
 
 
     res.json({ message: "Invite resent" });
 
   } catch (err) {
-    console.error("❌ RESEND ERROR:", err);
+    console.error("RESEND ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -162,7 +154,7 @@ if (!user || !user.spaceId) {
 
     res.json({ message: "Invite cancelled", inviteSent: false });
   } catch (err) {
-    console.error("❌ CANCEL INVITE ERROR:", err);
+    console.error("CANCEL INVITE ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
