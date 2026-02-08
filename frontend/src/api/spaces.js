@@ -19,7 +19,7 @@ export const getSpaceStatus = async () => {
 };
 
 export const sendInvite = (email) => {
-  return api.post("/spaces/invite", {
+  return api.post("/spaces/#invite", {
     partnerEmail: email
   });
 };
