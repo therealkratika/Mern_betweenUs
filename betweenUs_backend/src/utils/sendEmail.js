@@ -1,7 +1,9 @@
 const axios = require("axios");
 
 const sendMail = async ({ to, subject, html }) => {
-  // If key is missing, skip email safely
+  console.log("📧 sendMail called");
+  console.log("BREVO KEY PRESENT:", !!process.env.BREVO_API_KEY);
+
   if (!process.env.BREVO_API_KEY) {
     console.warn("⚠️ BREVO_API_KEY missing. Email skipped.");
     return;

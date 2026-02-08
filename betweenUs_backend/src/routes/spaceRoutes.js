@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
-
 const Space = require("../models/space");
 const User = require("../models/user");
 const { protect } = require("../middleware/authMiddleware");
-const sendMail = require("../utils/sendEmail");
+const sendMail = require("../utils/sendEmail.js");
 router.post("/create", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);

@@ -6,9 +6,10 @@ const app = express();
 const authRoutes = require("./src/routes/authRoutes");
 const spaceRoutes = require("./src/routes/spaceRoutes");
 const dayMemoryRoutes = require("./src/routes/dayMemoryRoutes");
+const path = require("path");
 
 const allowedOrigins = [
-  "http://localhost:5173",
+    "http://localhost:5173",
   "https://mern-betweenus-1.onrender.com"
 ];
 
@@ -28,11 +29,19 @@ app.get("/",(req,res)=>{
     res.send("BetweenUs bakend running")
 });
 require("./src/cron/deleteAccount");
+
 mongoose.connect(process.env.MONGO_URI).then(()=>{
     console.log("MongoDB connected");
     app.listen(5000,()=>{
         console.log("server is running on port 5000");
     });
+    app.use(express.static(path.join(__dirname, "frontend/dist")));
+
+app.get( (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "./frontend/dist/index.html")
+  );
+});
 }).catch((err)=>{
     console.error("DB connection failed",err);
 });
