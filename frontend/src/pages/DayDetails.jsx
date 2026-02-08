@@ -134,14 +134,6 @@ export default function DayDetail() {
 
           <div className="header-actions">
             <button
-              className="delete-btn"
-              title="Delete memory"
-              onClick={handleDelete}
-            >
-              🗑
-            </button>
-
-            <button
               className="close-btn"
               title="Close"
               onClick={() => navigate("/timeline")}
@@ -150,7 +142,7 @@ export default function DayDetail() {
             </button>
           </div>
         </div>
-
+<div className="daydetail-content">
         {/* GALLERY */}
         <div className="gallery">
           {memory.photos.length > 0 ? (
@@ -222,12 +214,20 @@ export default function DayDetail() {
               </button>
             ))}
           </div>
+          <button
+              className="delete-btn"
+              title="Delete memory"
+              onClick={handleDelete}
+            >
+              Delete Memory 🗑
+            </button>
         </div>
         <div className="private-note">
           <p className="note-title">✨ Private note</p>
           <p className="note-text">
             Visible only to you and your partner.
           </p>
+        </div>
         </div>
       </div>
     </div>
