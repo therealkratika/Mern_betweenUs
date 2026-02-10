@@ -7,7 +7,7 @@ import Signup from "./pages/SignUp";
 import CreateSpace from "./pages/createSpace";
 import InvitePartner from "./pages/InvitePartner";
 import Waiting from "./pages/Waiting";
-import Timeline from "./pages/Timeline";
+import Timeline from "./pages/timeline/Timeline.jsx";
 import AddDay from "./pages/addDay";
 import DayDetail from "./pages/DayDetails";
 import InvitationAcceptance from "./pages/InvitationAcceptance";
