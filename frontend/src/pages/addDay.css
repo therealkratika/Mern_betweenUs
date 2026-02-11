@@ -6,6 +6,40 @@
   padding: 0;
   font-family: 'Quicksand', sans-serif;
 }
+.emotion-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.emotion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 182, 193, 0.3);
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.emotion-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.emotion:hover {
+  transform: translateY(-2px);
+  border-color: #ffb6d9;
+}
+
+.emotion.active {
+  background: linear-gradient(135deg, #ffb6d9, #d4a5d4);
+  color: white;
+  border-color: transparent;
+}
 
 /* ================== WRAPPER ================== */
 .addday-wrapper {

@@ -16,16 +16,18 @@ export default function TimelineFilters({
           All
         </button>
 
-        {Object.entries(emotions).map(([key, value]) => (
-          <button
-            key={key}
-            className={filterEmotion === key ? "filter active" : "filter"}
-            onClick={() => setFilterEmotion(key)}
-            title={value.label}
-          >
-            {value.emoji}
-          </button>
-        ))}
+        {emotions.map((emo) => (
+  <button
+    key={emo.value}
+    className={filterEmotion === emo.value ? "filter active" : "filter"}
+    onClick={() => setFilterEmotion(emo.value)}
+  >
+    <img src={emo.icon} className="emotion-icon" alt={emo.label} />
+    {emo.label}
+  </button>
+))}
+
+
       </div>
 
       <div className="divider" />

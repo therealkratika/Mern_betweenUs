@@ -47,7 +47,9 @@ export default function Timeline() {
 
   const filteredMemories = memories.filter((memory) => {
     const emotionMatch =
-      filterEmotion === "all" || memory.emotion === filterEmotion;
+  filterEmotion === "all" ||
+  memory.emotion?.toLowerCase() === filterEmotion.toLowerCase();
+
 
     const yearMatch =
       filterYear === "all" ||

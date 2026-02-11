@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./addDay.css";
 import { secureUpload } from "../api/upload";
 import { addDayMemory } from "../api/memories";
-
+import { EMOTIONS } from "../../utils/Emotion.js";
 export default function AddDay() {
   const navigate = useNavigate();
 
@@ -15,21 +15,21 @@ export default function AddDay() {
   const [caption, setCaption] = useState("");
   const [emotion, setEmotion] = useState("love");
   const [saving, setSaving] = useState(false);
-
-  const emotions = [
-    { label: "❤️ Love", value: "love" },
-    { label: "✨ Joy", value: "joy" },
-    { label: "🌸 Peaceful", value: "peaceful" },
-    { label: "🫂 Together", value: "together" },
-    { label: "💭 Nostalgic", value: "nostalgic" }
-  ];
-
+  
   const handlePhotoUpload = (e) => {
     if (!e.target.files) return;
     const selected = Array.from(e.target.files);
     setPhotos((prev) => [...prev, ...selected]);
     e.target.value = "";
   };
+console.log({
+  date,
+  caption,
+  emotion,
+  coverPhotoIndex,
+  photos
+});
+
 
   const removePhoto = (index) => {
     const updated = photos.filter((_, i) => i !== index);
@@ -49,27 +49,33 @@ export default function AddDay() {
     }
 
     try {
-      setSaving(true);
+  setSaving(true);
 
-      const uploads = await Promise.all(
-        photos.map((file) => secureUpload(file))
-      );
+  const uploads = await Promise.all(
+    photos.map((file) => secureUpload(file))
+  );
 
-      await addDayMemory({
-        date,
-        caption,
-        emotion,
-        coverPhotoIndex,
-        photos: uploads
-      });
+  // Extract URL if upload returns object
+  const photoUrls = uploads.map((upload) =>
+    typeof upload === "string" ? upload : upload.url
+  );
 
-      navigate("/timeline");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to save memory");
-    } finally {
-      setSaving(false);
-    }
+  await addDayMemory({
+    date,
+    caption,
+    emotion,
+    coverPhotoIndex,
+    photos: photoUrls
+  });
+
+  navigate("/timeline");
+} catch (err) {
+  console.error(err);
+  alert("Failed to save memory");
+} finally {
+  setSaving(false);
+}
+
   };
 
   return (
@@ -146,17 +152,19 @@ export default function AddDay() {
           <div className="field">
             <label>How did this day feel?</label>
             <div className="emotion-row">
-              {emotions.map((emo) => (
-                <button
-                  key={emo.value}
-                  type="button"
-                  className={emotion === emo.value ? "emotion active" : "emotion"}
-                  onClick={() => setEmotion(emo.value)}
-                >
-                  {emo.label}
-                </button>
-              ))}
-            </div>
+  {EMOTIONS.map((emo) => (
+  <button
+    key={emo.value}
+    type="button"
+    className={emotion === emo.value ? "emotion active" : "emotion"}
+    onClick={() => setEmotion(emo.value)}
+  >
+    <img src={emo.icon} className="emotion-icon" alt={emo.label} />
+    {emo.label}
+  </button>
+))}
+</div>
+
           </div>
           <div className="field">
             <label>Capture the moment</label>
