@@ -45,18 +45,19 @@ export default function Timeline() {
     ).sort((a, b) => b - a),
   ];
 
-  const filteredMemories = memories.filter((memory) => {
-    const emotionMatch =
-  filterEmotion === "all" ||
-  memory.emotion?.toLowerCase() === filterEmotion.toLowerCase();
+ const filteredMemories = memories.filter((memory) => {
+  const emotionMatch =
+    filterEmotion === "all" ||
+    memory.emotion?.toLowerCase() === filterEmotion.toLowerCase();
 
+  const memoryYear = new Date(memory.date).getFullYear();
 
-    const yearMatch =
-      filterYear === "all" ||
-      new Date(memory.date).getFullYear().toString() === filterYear;
+  const yearMatch =
+    filterYear === "all" ||
+    memoryYear === Number(filterYear);
 
-    return emotionMatch && yearMatch;
-  });
+  return emotionMatch && yearMatch;
+});
 
   return (
     <div className="timeline-wrapper">
