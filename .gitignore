@@ -4,3 +4,5 @@ frontend/.env
 node_modules
 dist
 build
+backend/src/*firebase-adminsdk*.json
+firebase-adminsdk*.json
