@@ -1,13 +1,33 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../api/auth";
 import "./Login.css";
+ const handleGoogleLogin = async () => {
+    setError("");
+    setLoading(true);
 
-export default function Signup({ onSignup }) {
+    try {
+      await signInWithGoogle();
+
+      if (inviteToken) {
+        await api.post(`/spaces/accept/${inviteToken}`);
+      }
+
+      navigate("/timeline", { replace: true });
+    } catch (err) {
+      setError("Google sign-in failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,14 +35,11 @@ export default function Signup({ onSignup }) {
     setLoading(true);
 
     try {
-      await onSignup(name, email, password);
-      setLoading(false);
-
+      await registerUser(name, email, password);
+      navigate("/timeline");
     } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-          "Signup failed. Please try again."
-      );
+      setError(err.message || "Signup failed");
+    } finally {
       setLoading(false);
     }
   };
@@ -68,12 +85,16 @@ export default function Signup({ onSignup }) {
 
           {error && <p className="auth-error">{error}</p>}
 
-          <button
-            type="submit"
-            className="primary-btn"
+          <button type="submit" className="primary-btn" disabled={loading}>
+            {loading ? "Creating account..." : "Create Account"}
+          </button>
+           <button
+            type="button"
+            className="google-btn"
+            onClick={handleGoogleLogin}
             disabled={loading}
           >
-            {loading ? "Creating account..." : "Create Account"}
+            Continue with Google
           </button>
         </form>
 

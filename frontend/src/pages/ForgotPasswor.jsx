@@ -1,15 +1,35 @@
 import { useState } from "react";
-import api from "../api/api";
+import {forgotPassword} from "../api/auth";
+import { auth } from "../firebase";
 import "./Auth.css";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await api.post("/auth/forgot-password", { email });
-    setMsg(res.data.message);
+    setMsg("");
+    setError("");
+
+    if (!email.includes("@")) {
+      setError("Please enter a valid email");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await forgotPassword(email);
+      setMsg("If this email exists, a reset link has been sent.");
+    } catch (err) {
+      console.error("FORGOT PASSWORD ERROR ❌", err);
+      setError("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,12 +43,16 @@ export default function ForgotPassword() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
         />
 
-        <button type="submit">Send Reset Link</button>
+        <button type="submit" disabled={loading || !!msg}>
+          {loading ? "Sending..." : "Send Reset Link"}
+        </button>
       </form>
 
       {msg && <p className="success">{msg}</p>}
+      {error && <p className="error">{error}</p>}
     </div>
   );
 }

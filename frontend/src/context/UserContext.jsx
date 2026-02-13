@@ -1,55 +1,65 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "../firebase";
 import api from "../api/api";
 
-const UserContext = createContext(null);
+const UserContext = createContext();
 
 export function UserProvider({ children }) {
+  const [authUser, setAuthUser] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore session on refresh
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    let isMounted = true;
 
-    if (!token) {
-      setLoading(false);
-      return;
-    }
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      try {
+        if (firebaseUser) {
+          const token = await firebaseUser.getIdToken(true);
+          api.defaults.headers.common.Authorization = `Bearer ${token}`;
 
-    api
-      .get("/auth/me")
-      .then((res) => {
-        setUser(res.data.user);
-      })
-      .catch(() => {
-        localStorage.removeItem("token");
-        setUser(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+          if (isMounted) {
+            setAuthUser(firebaseUser);
+
+            const res = await api.get("/auth/me");
+            setUser(res.data.user);
+          }
+        } else {
+          if (isMounted) {
+            setAuthUser(null);
+            setUser(null);
+            delete api.defaults.headers.common.Authorization;
+          }
+        }
+      } catch (err) {
+        console.error("AUTH STATE ERROR ❌", err);
+        if (isMounted) {
+          setAuthUser(null);
+          setUser(null);
+          delete api.defaults.headers.common.Authorization;
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsub();
+    };
   }, []);
 
-  const login = ({ token, user }) => {
-    if (token) {
-      localStorage.setItem("token", token);
-    }
-
-    setUser((prev) => ({
-      ...prev,
-      ...user,
-      partnerName: user.partnerName ?? prev?.partnerName ?? null
-    }));
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
+  const logout = async () => {
+    await signOut(auth);
+    setAuthUser(null);
     setUser(null);
+    delete api.defaults.headers.common.Authorization;
   };
 
   return (
-    <UserContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
+    <UserContext.Provider value={{ authUser, user, loading, logout }}>
+      {children}
     </UserContext.Provider>
   );
 }

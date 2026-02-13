@@ -1,20 +1,22 @@
 const express = require("express");
 const router = express.Router();
 
-const User = require("../models/user");
 const DayMemory = require("../models/dayMemory");
-const { protect } = require("../middleware/authMiddleware");
+const auth = require("../middleware/authMiddleware");
 
-router.post("/add", protect, async (req, res) => {
+/* =========================
+   ADD MEMORY
+========================= */
+router.post("/add", auth, async (req, res) => {
   try {
     const { date, photos, coverPhotoIndex, caption, emotion } = req.body;
+    const user = req.user;
 
     if (!date || !photos || photos.length === 0) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user || !user.spaceId) {
+    if (!user.spaceId) {
       return res.status(403).json({ message: "No space access" });
     }
 
@@ -24,20 +26,23 @@ router.post("/add", protect, async (req, res) => {
       caption,
       emotion,
       coverPhotoIndex,
-      photos: photos.map((url) => ({ url })) // ✅ CRITICAL FIX
+      photos: photos.map((url) => ({ url }))
     });
 
     res.status(201).json(memory);
   } catch (err) {
-    console.error(err);
+    console.error("ADD MEMORY ERROR ❌", err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
+/* =========================
+   TIMELINE
+========================= */
+router.get("/timeline", auth, async (req, res) => {
+  const user = req.user;
 
-router.get("/timeline", protect, async (req, res) => {
-  const user = await User.findById(req.user.id);
-  if (!user || !user.spaceId) {
+  if (!user.spaceId) {
     return res.status(403).json({ message: "No space" });
   }
 
@@ -47,25 +52,31 @@ router.get("/timeline", protect, async (req, res) => {
 
   res.json(memories);
 });
-// routes/memories.js
-router.get("/:id", protect, async (req, res) => {
+
+/* =========================
+   SINGLE MEMORY
+========================= */
+router.get("/:id", auth, async (req, res) => {
+  const user = req.user;
   const memory = await DayMemory.findById(req.params.id);
 
   if (!memory) {
     return res.status(404).json({ message: "Memory not found" });
   }
 
-  // Optional safety: ensure same space
-  const user = await User.findById(req.user.id);
   if (!user.spaceId.equals(memory.spaceId)) {
     return res.status(403).json({ message: "Forbidden" });
   }
 
   res.json(memory);
 });
-router.post("/:id/react", protect, async (req, res) => {
+
+/* =========================
+   REACT TO MEMORY
+========================= */
+router.post("/:id/react", auth, async (req, res) => {
   const { emoji } = req.body;
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   const memory = await DayMemory.findById(req.params.id);
   if (!memory) {
@@ -73,55 +84,50 @@ router.post("/:id/react", protect, async (req, res) => {
   }
 
   const existingIndex = memory.reactions.findIndex(
-    (r) => r.emoji === emoji && r.userId.toString() === userId
+    (r) => r.emoji === emoji && r.userId.toString() === userId.toString()
   );
 
   if (existingIndex !== -1) {
-    // ❌ remove reaction
     memory.reactions.splice(existingIndex, 1);
   } else {
-    // ✅ add reaction
     memory.reactions.push({ emoji, userId });
   }
 
   await memory.save();
-
   res.json({ reactions: memory.reactions });
 });
-/**
- * 🔐 Delete a memory
- */
-router.delete("/:id", protect, async (req, res) => {
+
+/* =========================
+   DELETE MEMORY
+========================= */
+router.delete("/:id", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-
-    if (!user || !user.spaceId) {
-      return res.status(403).json({ message: "No space access" });
-    }
-
+    const user = req.user;
     const memory = await DayMemory.findById(req.params.id);
 
     if (!memory) {
       return res.status(404).json({ message: "Memory not found" });
     }
 
-    // ✅ Only allow delete if memory belongs to same space
-    if (memory.spaceId.toString() !== user.spaceId.toString()) {
+    if (!user.spaceId || memory.spaceId.toString() !== user.spaceId.toString()) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
     await memory.deleteOne();
-
     res.json({ message: "Memory deleted successfully" });
   } catch (err) {
     console.error("DELETE MEMORY ERROR ❌", err);
     res.status(500).json({ message: "Server error" });
   }
 });
-router.get("/on-this-day", protect, async (req, res) => {
+
+/* =========================
+   ON THIS DAY
+========================= */
+router.get("/on-this-day", auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user || !user.spaceId) {
+    const user = req.user;
+    if (!user.spaceId) {
       return res.status(404).json({ message: "No space found" });
     }
 
@@ -129,8 +135,7 @@ router.get("/on-this-day", protect, async (req, res) => {
     const day = today.getDate();
     const month = today.getMonth() + 1;
 
-    // same calendar day, any year
-    const sameDayMemories = await DayMemory.find({
+    const sameDay = await DayMemory.find({
       spaceId: user.spaceId,
       $expr: {
         $and: [
@@ -140,25 +145,14 @@ router.get("/on-this-day", protect, async (req, res) => {
       }
     }).sort({ date: -1 });
 
-    // recent memories
-    const recent = {
-      yesterday: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-      week: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      month: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-    };
-
-    const recentMemories = await DayMemory.find({
+    const recent = await DayMemory.find({
       spaceId: user.spaceId,
-      date: { $gte: recent.month }
+      date: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
     }).sort({ date: -1 });
 
-    res.json({
-      sameDay: sameDayMemories,
-      recent: recentMemories
-    });
-
+    res.json({ sameDay, recent });
   } catch (err) {
-    console.error("ON THIS DAY ERROR", err);
+    console.error("ON THIS DAY ERROR ❌", err);
     res.status(500).json({ message: "Server error" });
   }
 });

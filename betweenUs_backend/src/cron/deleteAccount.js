@@ -53,10 +53,6 @@ cron.schedule(
           await Space.findByIdAndDelete(spaceId).session(session);
           await User.deleteMany({ spaceId }).session(session);
         }
-
-        // ───────────────────────────────
-        // 👤 USER WITHOUT SPACE
-        // ───────────────────────────────
         if (!spaceId) {
           console.log(`🗑 Deleting solo user ${user._id}`);
           await User.findByIdAndDelete(user._id).session(session);

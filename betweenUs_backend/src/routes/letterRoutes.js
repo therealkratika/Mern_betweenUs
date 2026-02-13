@@ -3,12 +3,8 @@ const router = express.Router();
 
 const Letter = require("../models/letters");
 const User = require("../models/user");
-const { protect } = require("../middleware/authMiddleware");
-
-/* =========================
-   CREATE LETTER
-========================= */
-router.post("/", protect, async (req, res) => {
+const auth = require("../middleware/authMiddleware");
+router.post("/", auth, async (req, res) => {
   const { title, content, unlockDate } = req.body;
 
   if (!title || !content || !unlockDate) {
@@ -32,10 +28,7 @@ router.post("/", protect, async (req, res) => {
   res.status(201).json(letter);
 });
 
-/* =========================
-   GET LETTERS FOR SPACE
-========================= */
-router.get("/", protect, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   const user = await User.findById(req.user.id);
 
   if (!user || !user.spaceId) {
@@ -57,10 +50,7 @@ router.get("/", protect, async (req, res) => {
   res.json(formatted);
 });
 
-/* =========================
-   GET SINGLE LETTER
-========================= */
-router.get("/:id", protect, async (req, res) => {
+router.get("/:id", auth, async (req, res) => {
   const user = await User.findById(req.user.id);
   const letter = await Letter.findById(req.params.id);
 

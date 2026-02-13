@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const cloudinary = require("../utils/couldinary");
-const { protect } = require("../middleware/authMiddleware");
+const auth = require("../middleware/authMiddleware");
 const User = require("../models/user");
 
-router.post("/signature", protect, async (req, res) => {
+router.post("/signature", auth, async (req, res) => {
   const user = await User.findById(req.user.id);
 
   if (!user || !user.spaceId) {
@@ -29,6 +29,4 @@ router.post("/signature", protect, async (req, res) => {
     folder: `spaces/${user.spaceId}`
   });
 });
-
-
 module.exports = router;

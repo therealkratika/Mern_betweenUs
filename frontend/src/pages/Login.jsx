@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import "./Login.css";
+import { loginUser, signInWithGoogle } from "../api/auth";
 import api from "../api/api";
+import "./Login.css";
 
-export default function Login({ onLogin }) {
+export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite");
@@ -14,7 +15,7 @@ export default function Login({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   /* =========================
-     SUBMIT
+     EMAIL / PASSWORD LOGIN
   ========================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,29 +23,42 @@ export default function Login({ onLogin }) {
     setLoading(true);
 
     try {
-      // 1️⃣ Login user
-      await onLogin(email, password);
+      await loginUser(email, password);
 
-      // 2️⃣ Accept invite IF coming from invite link
       if (inviteToken) {
         await api.post(`/spaces/accept/${inviteToken}`);
       }
 
-      // 3️⃣ Go to shared timeline
       navigate("/timeline", { replace: true });
-
     } catch (err) {
-      setError(
-        err?.response?.data?.message ||
-        "Invalid email or password"
-      );
+      setError("Invalid email or password");
+    } finally {
       setLoading(false);
     }
   };
 
   /* =========================
-     UI
+     GOOGLE LOGIN / SIGNUP
   ========================= */
+  const handleGoogleLogin = async () => {
+    setError("");
+    setLoading(true);
+
+    try {
+      await signInWithGoogle();
+
+      if (inviteToken) {
+        await api.post(`/spaces/accept/${inviteToken}`);
+      }
+
+      navigate("/timeline", { replace: true });
+    } catch (err) {
+      setError("Google sign-in failed. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
@@ -89,18 +103,22 @@ export default function Login({ onLogin }) {
             Forgot password?
           </p>
 
+          <button type="submit" className="primary-btn" disabled={loading}>
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+
           <button
-            type="submit"
-            className="primary-btn"
+            type="button"
+            className="google-btn"
+            onClick={handleGoogleLogin}
             disabled={loading}
           >
-            {loading ? "Signing in..." : "Sign In"}
+            Continue with Google
           </button>
         </form>
 
         <p className="switch-text">
-          Don’t have an account?{" "}
-          <Link to="/signup">Sign up</Link>
+          Don’t have an account? <Link to="/signup">Sign up</Link>
         </p>
       </div>
     </div>

@@ -9,8 +9,7 @@ createRoot(document.getElementById("root")).render(
     <UserProvider>
       <TimelineProvider>
   <App />
-</TimelineProvider>
-
+      </TimelineProvider>
     </UserProvider>
   </StrictMode>
 );
