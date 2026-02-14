@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
-// 1. IMPORT YOUR AUTH INSTANCE
-import { auth } from "../firebase"; 
-// 2. IMPORT THE FIREBASE METHOD
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider,signInWithPopup } from "firebase/auth"; 
+import { auth } from "../firebase";
+
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult
+} from "firebase/auth";
+
 import "./InviteSignup.css";
 
 export default function InviteSignup() {
-  const { token } = useParams(); // ✅ FIXED
+  const { token } = useParams();
   const navigate = useNavigate();
 
   const [step, setStep] = useState("invite");
@@ -18,62 +24,49 @@ export default function InviteSignup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-const handleGoogleSignup = async () => {
-  try {
-    setLoading(true);
-    setError("");
 
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-
-    const firebaseUser = result.user;
-
-    // Ensure displayName exists (important for backend)
-    if (!firebaseUser.displayName) {
-      await updateProfile(firebaseUser, { displayName: "User" });
+  /* ---------------- VALIDATION ---------------- */
+  const validate = () => {
+    if (!name.trim()) {
+      setError("Name is required");
+      return false;
     }
+    if (!email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+    return true;
+  };
 
-    const tokenId = await firebaseUser.getIdToken();
-
-    // Accept invite
-    await api.post(`/spaces/accept/${token}`, {}, {
-      headers: { Authorization: `Bearer ${tokenId}` }
-    });
-
-    navigate("/timeline", { replace: true });
-
-  } catch (err) {
-    console.error(err);
-    setError("Google signup failed. Try again.");
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  /* ---------------- EMAIL SIGNUP ---------------- */
   const handleCreateAccount = async () => {
-    const validationError = validate();
-    if (validationError) return setError(validationError);
+    if (!validate()) return;
 
     try {
       setLoading(true);
       setError("");
 
-      // 3. ACTUAL FIREBASE CREATION
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update the Firebase profile so 'name' isn't null in your backend
-      await updateProfile(userCredential.user, { displayName: name });
+      const userCredential =
+        await createUserWithEmailAndPassword(auth, email, password);
 
-      // 4. GET TOKEN (Using the user object directly is safer)
+      await updateProfile(userCredential.user, {
+        displayName: name
+      });
+
       const tokenId = await userCredential.user.getIdToken();
 
-      // 5. ACCEPT INVITE
       await api.post(`/spaces/accept/${token}`, {}, {
         headers: { Authorization: `Bearer ${tokenId}` }
       });
 
-      // Navigate
       navigate("/timeline", { replace: true });
 
     } catch (err) {
@@ -84,10 +77,60 @@ const handleGoogleSignup = async () => {
     }
   };
 
+  /* ---------------- GOOGLE SIGNUP (MOBILE SAFE) ---------------- */
+  const handleGoogleSignup = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const provider = new GoogleAuthProvider();
+      await signInWithRedirect(auth, provider);
+
+    } catch (err) {
+      console.error(err);
+      setError("Google signup failed");
+      setLoading(false);
+    }
+  };
+
+  /* ---------------- HANDLE REDIRECT RESULT ---------------- */
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result) return;
+
+        const firebaseUser = result.user;
+
+        if (!firebaseUser.displayName) {
+          await updateProfile(firebaseUser, { displayName: "User" });
+        }
+
+        const tokenId = await firebaseUser.getIdToken();
+
+        await api.post(`/spaces/accept/${token}`, {}, {
+          headers: { Authorization: `Bearer ${tokenId}` }
+        });
+
+        navigate("/timeline", { replace: true });
+
+      } catch (err) {
+        console.error(err);
+        setError("Google signup failed");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleRedirectResult();
+  }, [navigate, token]);
+
+  /* ---------------- LOGIN REDIRECT ---------------- */
   const goToLogin = () => {
-    // pass invite token to login page
     navigate(`/login?invite=${token}`);
   };
+
+  /* ---------------- UI ---------------- */
   return (
     <div className="invite-signup-wrapper">
       <div className="invite-card">
@@ -156,13 +199,14 @@ const handleGoogleSignup = async () => {
             >
               {loading ? "Joining..." : "Join Space"}
             </button>
+
             <button
-  className="google-btn"
-  onClick={handleGoogleSignup}
-  disabled={loading}
->
-  Continue with Google
-</button>
+              className="google-btn"
+              onClick={handleGoogleSignup}
+              disabled={loading}
+            >
+              Continue with Google
+            </button>
 
             <p className="switch-text">
               Already have an account?{" "}
