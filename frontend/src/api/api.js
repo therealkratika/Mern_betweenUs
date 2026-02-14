@@ -2,7 +2,7 @@ import axios from "axios";
 import { auth } from "../firebase";
 
 const api = axios.create({
-  baseURL: "http://localhost:5000", 
+  baseURL: "https://betweenus-backend.onrender.com/api", 
 });
 
 // 🔑 Attach token to every request
