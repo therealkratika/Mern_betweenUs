@@ -1,8 +1,14 @@
-var admin = require("firebase-admin");
+var admin = require("firebase-admin");  
+const dotenv = require("dotenv");
 
-var serviceAccount = require("./betweenus-45513-firebase-adminsdk-fbsvc-96b09a17c1.json");
+dotenv.config();
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-module.exports = admin;
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    }),
+  });
+}
