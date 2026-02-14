@@ -51,7 +51,7 @@ export default function Login() {
         await api.post(`/spaces/accept/${inviteToken}`);
       }
 
-      navigate("/redirect");
+      navigate("/timeline", { replace: true });
 
     } catch (err) {
       setError("Google sign-in failed. Try again.");

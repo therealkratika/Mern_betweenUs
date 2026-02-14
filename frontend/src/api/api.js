@@ -2,10 +2,8 @@ import axios from "axios";
 import { auth } from "../firebase";
 
 const api = axios.create({
-  baseURL: "https://betweenus-backend.onrender.com/api", 
+  baseURL: "https://betweenus-api.onrender.com", 
 });
-
-// 🔑 Attach token to every request
 api.interceptors.request.use(
   async (config) => {
     const user = auth.currentUser;
