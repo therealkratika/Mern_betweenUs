@@ -2,7 +2,7 @@ import axios from "axios";
 import { auth } from "../firebase";
 
 const api = axios.create({
-  baseURL: "https://betweenus-api.onrender.com", 
+  baseURL: "https://mern-betweenus-c1c7.onrender.com", 
 });
 api.interceptors.request.use(
   async (config) => {
