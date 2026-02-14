@@ -16,14 +16,9 @@ const handleCreateSpace = async () => {
     if (!firebaseUser) throw new Error("Not authenticated");
 
     const token = await firebaseUser.getIdToken();
-
-    // ✅ backend call with Authorization header
     await createSpace(token);
 
-    // ✅ DO NOT manually update user
-    // UserContext will refetch /auth/me automatically
-
-    navigate("/invite");
+    navigate("/invite",{replace:true});
 
   } catch (err) {
     console.error(err);
