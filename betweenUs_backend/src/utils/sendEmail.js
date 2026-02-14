@@ -14,7 +14,7 @@ const sendMail = async ({ to, subject, html }) => {
       {
         sender: {
           name: "BetweenUs",
-          email: process.env.EMAIL_FROM // 👈 email ONLY
+          email: process.env.EMAIL_FROM .trim()
         },
         to: [{ email: to }],
         subject,

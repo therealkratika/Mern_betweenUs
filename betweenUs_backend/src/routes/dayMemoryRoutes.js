@@ -4,9 +4,6 @@ const router = express.Router();
 const DayMemory = require("../models/dayMemory");
 const auth = require("../middleware/authMiddleware");
 
-/* =========================
-   ADD MEMORY
-========================= */
 router.post("/add", auth, async (req, res) => {
   try {
     const { date, photos, coverPhotoIndex, caption, emotion } = req.body;
@@ -36,9 +33,6 @@ router.post("/add", auth, async (req, res) => {
   }
 });
 
-/* =========================
-   TIMELINE
-========================= */
 router.get("/timeline", auth, async (req, res) => {
   const user = req.user;
 
@@ -53,9 +47,6 @@ router.get("/timeline", auth, async (req, res) => {
   res.json(memories);
 });
 
-/* =========================
-   SINGLE MEMORY
-========================= */
 router.get("/:id", auth, async (req, res) => {
   const user = req.user;
   const memory = await DayMemory.findById(req.params.id);
@@ -71,9 +62,6 @@ router.get("/:id", auth, async (req, res) => {
   res.json(memory);
 });
 
-/* =========================
-   REACT TO MEMORY
-========================= */
 router.post("/:id/react", auth, async (req, res) => {
   const { emoji } = req.body;
   const userId = req.user._id;
@@ -97,9 +85,6 @@ router.post("/:id/react", auth, async (req, res) => {
   res.json({ reactions: memory.reactions });
 });
 
-/* =========================
-   DELETE MEMORY
-========================= */
 router.delete("/:id", auth, async (req, res) => {
   try {
     const user = req.user;
@@ -121,9 +106,6 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
-/* =========================
-   ON THIS DAY
-========================= */
 router.get("/on-this-day", auth, async (req, res) => {
   try {
     const user = req.user;

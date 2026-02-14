@@ -21,10 +21,6 @@ import ForgotPassword from "./pages/ForgotPasswor";
 import ResetPassword from "./pages/ResetPassword";
 import OnThisDay from "./pages/onThisDay";
 
-/* =========================
-   ROUTE GUARDS
-========================= */
-
 function PublicRoute({ children }) {
   const { user, loading } = useUser();
 

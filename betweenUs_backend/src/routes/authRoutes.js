@@ -5,7 +5,7 @@ const User = require("../models/user");
 const auth = require("../middleware/authMiddleware");
 router.get("/me", auth, async (req, res) => {
   try {
-    const user = req.user; // already synced MongoDB user
+    const user = req.user; 
 
     await user.populate({
       path: "spaceId",

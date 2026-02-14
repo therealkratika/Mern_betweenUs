@@ -1,42 +1,37 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext";
 import { createSpace } from "../api/spaces";
+import { auth } from "../firebase"; 
 import "./createSpace.css";
 
 export default function CreateSpace() {
   const navigate = useNavigate();
-  const { user, login } = useUser();
   const [loading, setLoading] = useState(false);
 
-  const handleCreateSpace = async () => {
+const handleCreateSpace = async () => {
+  try {
+    setLoading(true);
 
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser) throw new Error("Not authenticated");
 
-    try {
-      setLoading(true);
+    const token = await firebaseUser.getIdToken();
 
-      const data = await createSpace();
-      login({
-        token: localStorage.getItem("token"),
-        user: {
-          ...user,
-          spaceId: data.spaceId,
-          partnerJoined: false
-        }
-      });
+    // ✅ backend call with Authorization header
+    await createSpace(token);
 
-      navigate("/invite");
+    // ✅ DO NOT manually update user
+    // UserContext will refetch /auth/me automatically
 
-    } catch (err) {
-      alert(
-        err?.response?.data?.message ||
-        "Failed to create space"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+    navigate("/invite");
 
+  } catch (err) {
+    console.error(err);
+    alert(err?.response?.data?.message || "Failed to create space");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="space-wrapper">
       <div className="space-blob blob-a"></div>

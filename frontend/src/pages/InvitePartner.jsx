@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { sendInvite } from "../api/spaces";
+import { auth } from "../firebase";
 import "./InvitePartner.css";
 
 export default function InvitePartner() {
@@ -17,23 +18,30 @@ export default function InvitePartner() {
     setConfirm(true);
   };
 
- const handleConfirmInvite = async () => {
+const handleConfirmInvite = async () => {
   try {
     setLoading(true);
     setError("");
 
-    await sendInvite(email);
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser) {
+      throw new Error("Not authenticated");
+    }
+
+    const token = await firebaseUser.getIdToken();
+
+    await sendInvite(email, token);
 
     setSent(true);
     navigate("/waiting", { replace: true });
 
   } catch (err) {
-    // only true API failures land here
     setError("Something went wrong. Please try again.");
   } finally {
     setLoading(false);
   }
 };
+
   return (
     <div className="invite-wrapper">
       <div className="invite-card fade-up">

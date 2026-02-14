@@ -1,19 +1,11 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://mern-betweenus-c1c7.onrender.com",
+  baseURL: "http://localhost:5000",
   headers: {
     "Content-Type": "application/json"
   },
-   timeout: 10000
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  timeout: 10000
 });
 
 export default api;

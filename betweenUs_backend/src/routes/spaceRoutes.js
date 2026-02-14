@@ -3,6 +3,7 @@ const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
 const Space = require("../models/space");
 const auth = require("../middleware/authMiddleware");
+const User = require("../models/user");
 const sendMail = require("../utils/sendEmail");
 
 router.post("/create", auth, async (req, res) => {
@@ -71,7 +72,7 @@ router.post("/invite", auth, async (req, res) => {
       await space.save();
     }
 
-    const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
+    const inviteLink = `${process.env.FRONTEND_URL}/#/invite/${space.inviteToken}`;
 
     try {
       await sendMail({
@@ -116,7 +117,7 @@ router.post("/invite/resend", auth, async (req, res) => {
       return res.status(400).json({ message: "No active invite" });
     }
 
-    const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
+    const inviteLink = `${process.env.FRONTEND_URL}/#/invite/${space.inviteToken}`;
 
     await sendMail({
       to: space.inviteEmail,
@@ -158,10 +159,6 @@ router.post("/invite/cancel", auth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-/* =========================
-   ACCEPT INVITE
-========================= */
 router.post("/accept/:token", auth, async (req, res) => {
   try {
     const space = await Space.findOne({
@@ -197,4 +194,39 @@ router.post("/accept/:token", auth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+router.get("/status", auth, async (req, res) => {
+  try {
+    const user = req.user;
+
+    // 1️⃣ No space at all
+    if (!user.spaceId) {
+      return res.json({ state: "NO_SPACE" });
+    }
+
+    const space = await Space.findById(user.spaceId);
+
+    // 2️⃣ Space exists, no invite, no partner
+    if (!space.inviteToken && !space.partnerId) {
+      return res.json({ state: "NO_INVITE" });
+    }
+
+    // 3️⃣ Invite sent, waiting
+    if (space.inviteToken && !space.partnerId) {
+      return res.json({
+        state: "INVITE_SENT",
+        inviteEmail: space.inviteEmail,
+        inviteLink: `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`
+      });
+    }
+
+    // 4️⃣ Partner joined
+    return res.json({ state: "PARTNER_JOINED" });
+
+  } catch (err) {
+    console.error("STATUS ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 module.exports = router;

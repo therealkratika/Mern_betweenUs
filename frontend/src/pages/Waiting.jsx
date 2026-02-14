@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getSpaceStatus, resendInvite, cancelInvite } from "../api/spaces";
+import {
+  getSpaceStatus,
+  resendInvite,
+  cancelInvite
+} from "../api/spaces";
+import { auth } from "../firebase";
 import "./Waiting.css";
 
 export default function Waiting() {
@@ -16,7 +21,11 @@ export default function Waiting() {
   useEffect(() => {
     const loadStatus = async () => {
       try {
-        const status = await getSpaceStatus();
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) return navigate("/login");
+
+        const token = await firebaseUser.getIdToken();
+        const status = await getSpaceStatus(token);
 
         if (status.state === "NO_SPACE") return navigate("/create-space");
         if (status.state === "NO_INVITE") return navigate("/invite");
@@ -27,7 +36,8 @@ export default function Waiting() {
           setInviteLink(status.inviteLink);
           setLoading(false);
         }
-      } catch {
+      } catch (err) {
+        console.error("STATUS LOAD ERROR", err);
         navigate("/login");
       }
     };
@@ -45,13 +55,15 @@ export default function Waiting() {
   };
 
   const handleResend = async () => {
-    await resendInvite();
+    const token = await auth.currentUser.getIdToken();
+    await resendInvite(token);
     setResent(true);
     setTimeout(() => setResent(false), 3000);
   };
 
   const handleCancel = async () => {
-    await cancelInvite();
+    const token = await auth.currentUser.getIdToken();
+    await cancelInvite(token);
     navigate("/invite");
   };
 
@@ -72,10 +84,12 @@ export default function Waiting() {
         <p className="muted">
           Waiting for them to accept and join your shared space…
         </p>
+
         <div className="status-box">
           <p>✅ Email sent successfully</p>
           <p className="pulse">⏳ Waiting for acceptance</p>
         </div>
+
         <div className="link-box">
           <input value={inviteLink} readOnly />
           <button onClick={handleCopy}>
@@ -83,7 +97,6 @@ export default function Waiting() {
           </button>
         </div>
 
-        {/* ACTIONS */}
         <button
           className="outline-btn"
           onClick={handleResend}

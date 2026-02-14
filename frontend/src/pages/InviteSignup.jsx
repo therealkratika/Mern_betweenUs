@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useUser } from "../context/UserContext";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
+// 1. IMPORT YOUR AUTH INSTANCE
+import { auth } from "../firebase"; 
+// 2. IMPORT THE FIREBASE METHOD
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider,signInWithPopup } from "firebase/auth"; 
 import "./InviteSignup.css";
 
 export default function InviteSignup() {
   const { token } = useParams(); // ✅ FIXED
   const navigate = useNavigate();
-  const { login } = useUser();
 
   const [step, setStep] = useState("invite");
   const [name, setName] = useState("");
@@ -16,79 +18,76 @@ export default function InviteSignup() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+const handleGoogleSignup = async () => {
+  try {
+    setLoading(true);
+    setError("");
 
-  /* =========================
-     VALIDATION
-  ========================= */
-  const validate = () => {
-    if (!name || !email || !password) return "All fields required";
-    if (password.length < 6)
-      return "Password must be at least 6 characters";
-    if (password !== confirmPassword)
-      return "Passwords do not match";
-    return null;
-  };
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
 
-  /* =========================
-     NEW USER FLOW
-  ========================= */
+    const firebaseUser = result.user;
+
+    // Ensure displayName exists (important for backend)
+    if (!firebaseUser.displayName) {
+      await updateProfile(firebaseUser, { displayName: "User" });
+    }
+
+    const tokenId = await firebaseUser.getIdToken();
+
+    // Accept invite
+    await api.post(`/spaces/accept/${token}`, {}, {
+      headers: { Authorization: `Bearer ${tokenId}` }
+    });
+
+    navigate("/timeline", { replace: true });
+
+  } catch (err) {
+    console.error(err);
+    setError("Google signup failed. Try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   const handleCreateAccount = async () => {
     const validationError = validate();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    if (validationError) return setError(validationError);
 
     try {
       setLoading(true);
       setError("");
 
-      // 1️⃣ Register
-      const registerRes = await api.post("/auth/register", {
-        name,
-        email,
-        password
+      // 3. ACTUAL FIREBASE CREATION
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update the Firebase profile so 'name' isn't null in your backend
+      await updateProfile(userCredential.user, { displayName: name });
+
+      // 4. GET TOKEN (Using the user object directly is safer)
+      const tokenId = await userCredential.user.getIdToken();
+
+      // 5. ACCEPT INVITE
+      await api.post(`/spaces/accept/${token}`, {}, {
+        headers: { Authorization: `Bearer ${tokenId}` }
       });
 
-      const authToken = registerRes.data.token;
-      localStorage.setItem("token", authToken);
-
-      // 2️⃣ Accept invite
-      const acceptRes = await api.post(`/spaces/accept/${token}`);
-
-      // 3️⃣ Login with final state
-      login({
-        token: authToken,
-        user: {
-          ...registerRes.data.user,
-          spaceId: acceptRes.data.spaceId,
-          partnerJoined: true
-        }
-      });
-
-      // 4️⃣ Go to shared timeline
+      // Navigate
       navigate("/timeline", { replace: true });
 
     } catch (err) {
-      setError(
-        err?.response?.data?.message || "Failed to join space"
-      );
+      console.error(err);
+      setError(err.message || "Failed to join space");
     } finally {
       setLoading(false);
     }
   };
 
-  /* =========================
-     EXISTING USER FLOW
-  ========================= */
   const goToLogin = () => {
     // pass invite token to login page
     navigate(`/login?invite=${token}`);
   };
-
-  /* =========================
-     UI
-  ========================= */
   return (
     <div className="invite-signup-wrapper">
       <div className="invite-card">
@@ -157,6 +156,13 @@ export default function InviteSignup() {
             >
               {loading ? "Joining..." : "Join Space"}
             </button>
+            <button
+  className="google-btn"
+  onClick={handleGoogleSignup}
+  disabled={loading}
+>
+  Continue with Google
+</button>
 
             <p className="switch-text">
               Already have an account?{" "}

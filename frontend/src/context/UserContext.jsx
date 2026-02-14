@@ -1,64 +1,48 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../firebase";
+import  {auth } from "../firebase";
 import api from "../api/api";
 
-const UserContext = createContext();
+const UserContext = createContext(null);
 
 export function UserProvider({ children }) {
-  const [authUser, setAuthUser] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
+  const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
 
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
-      try {
-        if (firebaseUser) {
-          const token = await firebaseUser.getIdToken(true);
-          api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    if (!firebaseUser) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
 
-          if (isMounted) {
-            setAuthUser(firebaseUser);
+    try {
+      const token = await firebaseUser.getIdToken();
+      console.log("Token:", token);
+      const res = await api.get("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(res.data.user);
+    } catch (err) {
+      console.log("AUTH CHECK FAILED (safe)");
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  });
 
-            const res = await api.get("/auth/me");
-            setUser(res.data.user);
-          }
-        } else {
-          if (isMounted) {
-            setAuthUser(null);
-            setUser(null);
-            delete api.defaults.headers.common.Authorization;
-          }
-        }
-      } catch (err) {
-        console.error("AUTH STATE ERROR ❌", err);
-        if (isMounted) {
-          setAuthUser(null);
-          setUser(null);
-          delete api.defaults.headers.common.Authorization;
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      unsub();
-    };
-  }, []);
+  return () => unsub();
+}, []);
 
   const logout = async () => {
     await signOut(auth);
-    setAuthUser(null);
     setUser(null);
-    delete api.defaults.headers.common.Authorization;
   };
 
   return (
-    <UserContext.Provider value={{ authUser, user, loading, logout }}>
+    <UserContext.Provider value={{ user, loading, logout }}>
       {children}
     </UserContext.Provider>
   );
