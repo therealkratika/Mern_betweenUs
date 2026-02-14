@@ -67,7 +67,8 @@ export default function InviteSignup() {
         headers: { Authorization: `Bearer ${tokenId}` }
       });
 
-      navigate("/timeline", { replace: true });
+      navigate("/redirect");
+
 
     } catch (err) {
       console.error(err);

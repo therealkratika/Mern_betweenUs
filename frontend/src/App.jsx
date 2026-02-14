@@ -1,6 +1,6 @@
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useUser } from "./context/UserContext";
-
+import Redirect from "./components/Redirect";
 // Pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -71,15 +71,23 @@ function RequireTimeline({ children }) {
   return children;
 }
 
-/* =========================
-   APP
-========================= */
-
 export default function App() {
   return (
     <HashRouter>
+      {/* ✅ Router is ACTIVE here */}
+      
+
       <Routes>
         {/* Invites */}
+        <Route
+  path="/redirect"
+  element={
+    <PrivateRoute>
+      <Redirect />
+    </PrivateRoute>
+  }
+/>
+
         <Route path="/invite/:token" element={<InvitationAcceptance />} />
         <Route path="/invite/:token/signup" element={<InviteSignup />} />
 
