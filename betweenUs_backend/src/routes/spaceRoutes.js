@@ -39,10 +39,6 @@ router.post("/create", auth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-/* =========================
-   SEND INVITE
-========================= */
 router.post("/invite", auth, async (req, res) => {
   try {
     const { partnerEmail } = req.body;
@@ -72,7 +68,7 @@ router.post("/invite", auth, async (req, res) => {
       await space.save();
     }
 
-    const inviteLink = `${process.env.FRONTEND_URL}/#/invite/${space.inviteToken}`;
+    const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
 
     try {
       await sendMail({
@@ -117,7 +113,7 @@ router.post("/invite/resend", auth, async (req, res) => {
       return res.status(400).json({ message: "No active invite" });
     }
 
-    const inviteLink = `${process.env.FRONTEND_URL}/#/invite/${space.inviteToken}`;
+    const inviteLink = `${process.env.FRONTEND_URL}/invite/${space.inviteToken}`;
 
     await sendMail({
       to: space.inviteEmail,

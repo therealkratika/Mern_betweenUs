@@ -1,26 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../api/auth";
+import { registerUser, getGoogleRedirectResult, googlePopup} from "../api/auth";
 import "./Login.css";
- const handleGoogleLogin = async () => {
-    setError("");
-    setLoading(true);
 
-    try {
-      await signInWithGoogle();
-
-      if (inviteToken) {
-        await api.post(`/spaces/accept/${inviteToken}`);
-      }
-
-      navigate("/redirect");
-
-    } catch (err) {
-      setError("Google sign-in failed. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 export default function Signup() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -30,6 +12,61 @@ export default function Signup() {
 
   const navigate = useNavigate();
 
+  /* =========================
+     HANDLE GOOGLE REDIRECT
+  ========================= */
+  useEffect(() => {
+    let mounted = true;
+
+    const handleRedirect = async () => {
+      try {
+        const result = await getGoogleRedirectResult();
+        if (!result?.user) return;
+
+        if (mounted) {
+          navigate("/login", { replace: true });
+
+        }
+      } catch (err) {
+        if (mounted) {
+          console.error(err);
+          setError("Google sign-in failed");
+        }
+      }
+    };
+
+    handleRedirect();
+    return () => (mounted = false);
+  }, [navigate]);
+/* =========================
+    GOOGLE SIGNUP (HYBRID)
+========================= */
+const handleGoogleLogin = async () => {
+  setError("");
+  setLoading(true);
+
+  try {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      await googleRedirect();
+    } else {
+      // Desktop: Use Popup for a better user experience
+      const result = await googlePopup();
+      if (result.user) {
+        // Since there's no redirect, we handle the navigation immediately
+        navigate("/login", { replace: true });
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    setError("Google sign-in failed. Try again.");
+    setLoading(false);
+  }
+};
+  /* =========================
+     EMAIL SIGNUP
+  ========================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -37,7 +74,8 @@ export default function Signup() {
 
     try {
       await registerUser(name, email, password);
-      navigate("/timeline");
+      navigate("/login", { replace: true });
+
     } catch (err) {
       setError(err.message || "Signup failed");
     } finally {
@@ -48,50 +86,39 @@ export default function Signup() {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        <div className="auth-header">
-          <h2>Begin your journey</h2>
-          <p>Create your account to start</p>
-        </div>
+        <h2>Begin your journey</h2>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="field">
-            <label>Your name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <input
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
 
-          <div className="field">
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <div className="field">
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
           {error && <p className="auth-error">{error}</p>}
 
-          <button type="submit" className="primary-btn" disabled={loading}>
+          <button disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}
           </button>
-           <button
+
+          <button
             type="button"
-            className="google-btn"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
@@ -99,9 +126,7 @@ export default function Signup() {
           </button>
         </form>
 
-        <p className="switch-text">
-          Already have an account? <Link to="/login">Sign in</Link>
-        </p>
+        <Link to="/login">Sign in</Link>
       </div>
     </div>
   );

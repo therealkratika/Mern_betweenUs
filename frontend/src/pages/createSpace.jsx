@@ -1,35 +1,25 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createSpace } from "../api/spaces";
-import { auth } from "../firebase"; 
 import { useUser } from "../context/UserContext";
-
 import "./createSpace.css";
 
 export default function CreateSpace() {
- const navigate = useNavigate();
-  const {setUser }= useUser(); // 🔥 THIS
+  const navigate = useNavigate();
+  const { user, refreshUser } = useUser();
   const [loading, setLoading] = useState(false);
 
- const handleCreateSpace = async () => {
+  const handleCreateSpace = async () => {
+    if (!user) {
+      alert("Not authenticated yet. Please wait.");
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const firebaseUser = auth.currentUser;
-      if (!firebaseUser) throw new Error("Not authenticated");
-
-      const token = await firebaseUser.getIdToken();
-
-      const res = await createSpace(token); // must return spaceId
-
-      // 🔥 SYNC FRONTEND STATE
-      setUser(prev => ({
-        ...prev,
-        spaceId: res.spaceId,
-        partnerJoined: false
-      }));
-
-      // 🔥 NOW NAVIGATION WORKS CONSISTENTLY
+      await createSpace(); 
+      await refreshUser();
       navigate("/invite", { replace: true });
 
     } catch (err) {
@@ -74,12 +64,12 @@ export default function CreateSpace() {
         </div>
 
         <button
-          className="primary-btn"
-          onClick={handleCreateSpace}
-          disabled={loading}
-        >
-          {loading ? "Creating..." : "Create My Space"}
-        </button>
+  className="primary-btn"
+  onClick={handleCreateSpace}
+  disabled={loading || !user}
+>
+  {loading ? "Creating..." : "Create My Space"}
+</button>
 
         <p className="note">
           This is a sacred moment. Take your time.

@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { loginUser, signInWithGoogle } from "../api/auth";
+import { loginUser, signInWithGoogle, getGoogleRedirectResult } from "../api/auth";
 import api from "../api/api";
 import "./Login.css";
 
@@ -13,6 +13,28 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  /* =========================
+     HANDLE GOOGLE REDIRECT RESULT
+  ========================= */
+  useEffect(() => {
+    const handleRedirect = async () => {
+      try {
+        const result = await getGoogleRedirectResult();
+        if (!result?.user) return;
+
+        if (inviteToken) {
+          await api.post(`/spaces/accept/${inviteToken}`);
+        }
+navigate("/timeline", { replace: true });
+
+      } catch {
+        setError("Google sign-in failed. Try again.");
+      }
+    };
+
+    handleRedirect();
+  }, [inviteToken, navigate]);
 
   /* =========================
      EMAIL / PASSWORD LOGIN
@@ -30,7 +52,8 @@ export default function Login() {
       }
 
       navigate("/timeline", { replace: true });
-    } catch (err) {
+
+    } catch {
       setError("Invalid email or password");
     } finally {
       setLoading(false);
@@ -38,24 +61,17 @@ export default function Login() {
   };
 
   /* =========================
-     GOOGLE LOGIN / SIGNUP
+     GOOGLE LOGIN
   ========================= */
   const handleGoogleLogin = async () => {
     setError("");
     setLoading(true);
-
     try {
-      await signInWithGoogle();
-
-      if (inviteToken) {
-        await api.post(`/spaces/accept/${inviteToken}`);
-      }
-
+      await signInWithGoogle(); 
       navigate("/timeline", { replace: true });
 
-    } catch (err) {
+    } catch {
       setError("Google sign-in failed. Try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -63,54 +79,31 @@ export default function Login() {
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
-        <div className="auth-header">
-          <h2>Welcome back</h2>
-          <p>
-            {inviteToken
-              ? "Sign in to join your shared space"
-              : "Sign in to your private space"}
-          </p>
-        </div>
+        <h2>Welcome back</h2>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="field">
-            <label>Email</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <div className="field">
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
 
           {error && <p className="auth-error">{error}</p>}
 
-          <p
-            className="forgot-link"
-            onClick={() => navigate("/forgot-password")}
-          >
-            Forgot password?
-          </p>
-
-          <button type="submit" className="primary-btn" disabled={loading}>
+          <button disabled={loading}>
             {loading ? "Signing in..." : "Sign In"}
           </button>
 
           <button
             type="button"
-            className="google-btn"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
@@ -118,9 +111,7 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="switch-text">
-          Don’t have an account? <Link to="/signup">Sign up</Link>
-        </p>
+        <Link to="/signup">Sign up</Link>
       </div>
     </div>
   );

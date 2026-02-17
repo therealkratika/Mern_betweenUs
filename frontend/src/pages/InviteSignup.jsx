@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
+import { useUser } from "../context/UserContext";
 import { auth } from "../firebase";
 
 import {
@@ -8,14 +9,16 @@ import {
   updateProfile,
   GoogleAuthProvider,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+    signInWithPopup
 } from "firebase/auth";
 
 import "./InviteSignup.css";
 
 export default function InviteSignup() {
-  const { token } = useParams();
+ const { token } = useParams();
   const navigate = useNavigate();
+  const { refreshUser } = useUser();
 
   const [step, setStep] = useState("invite");
   const [name, setName] = useState("");
@@ -46,53 +49,74 @@ export default function InviteSignup() {
     return true;
   };
 
-  /* ---------------- EMAIL SIGNUP ---------------- */
   const handleCreateAccount = async () => {
     if (!validate()) return;
-
     try {
       setLoading(true);
       setError("");
 
-      const userCredential =
-        await createUserWithEmailAndPassword(auth, email, password);
-
-      await updateProfile(userCredential.user, {
-        displayName: name
-      });
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: name });
 
       const tokenId = await userCredential.user.getIdToken();
 
+      // Accept the space
       await api.post(`/spaces/accept/${token}`, {}, {
         headers: { Authorization: `Bearer ${tokenId}` }
       });
 
-      navigate("/redirect");
+      // 3. CRITICAL: Update the Global Context so spaceId is recognized
+      await refreshUser(); 
 
-
-    } catch (err) {
+      navigate("/timeline", { replace: true });
+    }catch (err) {
       console.error(err);
       setError(err.message || "Failed to join space");
     } finally {
       setLoading(false);
     }
   };
+const handleGoogleSignup = async () => {
+  setError("");
+  setLoading(true);
 
-  /* ---------------- GOOGLE SIGNUP (MOBILE SAFE) ---------------- */
-  const handleGoogleSignup = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  try {
+    const provider = new GoogleAuthProvider();
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-      const provider = new GoogleAuthProvider();
+    if (isMobile) {
+      // Mobile: Uses redirect (standard for mobile browsers)
       await signInWithRedirect(auth, provider);
-
-    } catch (err) {
-      console.error(err);
-      setError("Google signup failed");
-      setLoading(false);
+    } else {
+      // Desktop: Uses popup (better UX)
+      const result = await signInWithPopup(auth, provider);
+      if (result.user) {
+        // If this is InviteSignup, call your acceptance logic here
+        await handleSuccessfulAuth(result.user);
+      }
     }
-  };
+  } catch (err) {
+    setError("Google login failed");
+    setLoading(false);
+  }
+};
+const handleSuccessfulAuth = async (firebaseUser) => {
+  try {
+    const tokenId = await firebaseUser.getIdToken();
+    
+    // Pass the token DIRECTLY in the headers to avoid 401
+    await api.post(`/spaces/accept/${token}`, {}, {
+      headers: { Authorization: `Bearer ${tokenId}` }
+    });
+
+    // Now sync the context
+    await refreshUser(); 
+    navigate("/timeline", { replace: true });
+  } catch (err) {
+    console.error("Join Error:", err);
+    setError(err.response?.data?.message || "Failed to join space");
+  }
+};
 
   /* ---------------- HANDLE REDIRECT RESULT ---------------- */
   useEffect(() => {

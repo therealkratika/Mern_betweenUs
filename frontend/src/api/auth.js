@@ -5,12 +5,21 @@ import {
   sendPasswordResetEmail,
   updateProfile,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut,
-  sendEmailVerification
+  sendEmailVerification,
+  deleteUser,
+  signInWithPopup
 } from "firebase/auth";
 import { auth } from "../firebase";
 
+const googleProvider = new GoogleAuthProvider();
+export const googlePopup = () => signInWithPopup(auth, googleProvider);
+export const googleRedirect = () => signInWithRedirect(auth, googleProvider);
+/* =========================
+   EMAIL / PASSWORD SIGNUP
+========================= */
 export const registerUser = async (name, email, password) => {
   const res = await createUserWithEmailAndPassword(auth, email, password);
 
@@ -19,22 +28,37 @@ export const registerUser = async (name, email, password) => {
   await signOut(auth);
 
   return {
-    message: "Verification email sent. Please verify before login."
+    message: "Verification email sent. Please verify before login.",
   };
 };
 
+/* =========================
+   EMAIL / PASSWORD LOGIN
+========================= */
 export const loginUser = async (email, password) => {
   try {
-  await signInWithEmailAndPassword(auth, email, password);
-} catch (err) {
-  console.log("FIREBASE LOGIN ERROR:", err.code, err.message);
-}
-
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    console.log("FIREBASE LOGIN ERROR:", err.code, err.message);
+    throw err;
+  }
 };
+
+
 export const signInWithGoogle = async () => {
-  const provider = new GoogleAuthProvider();
-  const res = await signInWithPopup(auth, provider);
-  return res.user;
+
+  return signInWithRedirect(auth, googleProvider);
+};
+
+export const getGoogleRedirectResult = async () => {
+  const result = await getRedirectResult(auth);
+
+  if (!result) return null;
+
+  const token = await result.user.getIdToken(true);
+  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+  return result.user;
 };
 
 
@@ -44,6 +68,13 @@ export const forgotPassword = async (email) => {
 };
 
 export const deleteAccount = async () => {
-  const res = await api.delete("/auth/delete-account");
-  return res.data;
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("No user logged in");
+  }
+  await api.delete("/users/me");
+  await deleteUser(user);
+
+  return true;
 };

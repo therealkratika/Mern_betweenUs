@@ -1,6 +1,5 @@
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useUser } from "./context/UserContext";
-import Redirect from "./components/Redirect";
 // Pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -27,7 +26,11 @@ function PublicRoute({ children }) {
   if (loading) return null;
 
   if (!user) return children;
+  
+  // Logical flow based on space status
   if (!user.spaceId) return <Navigate to="/create-space" replace />;
+  
+  // If they have a space but no partner, they belong in /waiting or /invite
   if (!user.partnerJoined) return <Navigate to="/waiting" replace />;
 
   return <Navigate to="/timeline" replace />;
@@ -39,12 +42,13 @@ function PrivateRoute({ children }) {
   if (loading) return null;
   return user ? children : <Navigate to="/login" replace />;
 }
-
 function RequireSpace({ children }) {
   const { user, loading } = useUser();
 
-  if (loading) return null;
+  if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
+  
+  // If user has NO space, they MUST stay in create-space
   if (!user.spaceId) return <Navigate to="/create-space" replace />;
 
   return children;
@@ -60,7 +64,6 @@ function RequireWaiting({ children }) {
 
   return children;
 }
-
 function RequireTimeline({ children }) {
   const { user, loading } = useUser();
 
@@ -70,23 +73,11 @@ function RequireTimeline({ children }) {
 
   return children;
 }
-
 export default function App() {
   return (
-    <HashRouter>
-      {/* ✅ Router is ACTIVE here */}
-      
+    <BrowserRouter>   
 
       <Routes>
-        {/* Invites */}
-        <Route
-  path="/redirect"
-  element={
-    <PrivateRoute>
-      <Redirect />
-    </PrivateRoute>
-  }
-/>
 
         <Route path="/invite/:token" element={<InvitationAcceptance />} />
         <Route path="/invite/:token/signup" element={<InviteSignup />} />
@@ -224,6 +215,6 @@ export default function App() {
 
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
-    </HashRouter>
+    </BrowserRouter>
   );
 }

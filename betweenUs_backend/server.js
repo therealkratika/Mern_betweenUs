@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const authRoutes = require("./src/routes/authRoutes");
+const authRoutes = require("./src/routes/authRoutes")
 const spaceRoutes = require("./src/routes/spaceRoutes");
 const dayMemoryRoutes = require("./src/routes/dayMemoryRoutes");
 const uploadRoutes = require("./src/routes/uploadRoutes");
@@ -28,7 +28,7 @@ app.use(
 
 app.use(express.json());
 // API routes
-app.use("/auth", authRoutes);
+app.use("/auth",authRoutes);
 app.use("/spaces", spaceRoutes);
 app.use("/memories", dayMemoryRoutes);
 app.use("/upload", uploadRoutes);
