@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useUser } from "./context/UserContext";
-// Pages
+
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/SignUp";
@@ -89,9 +89,9 @@ export default function App() {
         <Route
           path="/login"
           element={
-            <PublicRoute>
+          
               <Login />
-            </PublicRoute>
+          
           }
         />
 
@@ -103,11 +103,8 @@ export default function App() {
             </PublicRoute>
           }
         />
-
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-
-        {/* Protected */}
         <Route
           path="/create-space"
           element={
