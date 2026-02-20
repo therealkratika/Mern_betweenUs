@@ -16,7 +16,7 @@ require("./src/cron/deleteAccount");
 // CORS
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://69989d5adb605fed74a66e84--betweenuss.netlify.app/" 
+  "https://betweenuss.netlify.app", 
 ];
 
 app.use(
