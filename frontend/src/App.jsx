@@ -27,10 +27,8 @@ function PublicRoute({ children }) {
 
   if (!user) return children;
   
-  // Logical flow based on space status
   if (!user.spaceId) return <Navigate to="/create-space" replace />;
-  
-  // If they have a space but no partner, they belong in /waiting or /invite
+
   if (!user.partnerJoined) return <Navigate to="/waiting" replace />;
 
   return <Navigate to="/timeline" replace />;
@@ -47,8 +45,6 @@ function RequireSpace({ children }) {
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" replace />;
-  
-  // If user has NO space, they MUST stay in create-space
   if (!user.spaceId) return <Navigate to="/create-space" replace />;
 
   return children;
@@ -81,8 +77,6 @@ export default function App() {
 
         <Route path="/invite/:token" element={<InvitationAcceptance />} />
         <Route path="/invite/:token/signup" element={<InviteSignup />} />
-
-        {/* Public */}
         <Route
           path="/"
           element={

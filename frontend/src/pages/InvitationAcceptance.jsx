@@ -12,7 +12,6 @@ export default function InvitationAcceptance() {
 
   const handleAccept = async () => {
     try {
-      // ✅ If already logged in → accept directly
       if (user) {
         const res = await api.post(`/spaces/accept/${token}`);
 
@@ -27,8 +26,6 @@ export default function InvitationAcceptance() {
         navigate("/timeline", { replace: true });
         return;
       }
-
-      // ❌ Not logged in → go to invite signup
       navigate(`/invite/${token}/signup`);
     } catch (err) {
       alert(

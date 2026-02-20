@@ -128,9 +128,6 @@ router.post("/invite/resend", auth, async (req, res) => {
   }
 });
 
-/* =========================
-   CANCEL INVITE
-========================= */
 router.post("/invite/cancel", auth, async (req, res) => {
   try {
     const user = req.user;
