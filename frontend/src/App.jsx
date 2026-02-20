@@ -23,12 +23,10 @@ import OnThisDay from "./pages/onThisDay";
 function PublicRoute({ children }) {
   const { user, loading } = useUser();
 
-  if (loading) return null;
+  if (loading) return <div>Loading...</div>;
 
   if (!user) return children;
-  
   if (!user.spaceId) return <Navigate to="/create-space" replace />;
-
   if (!user.partnerJoined) return <Navigate to="/waiting" replace />;
 
   return <Navigate to="/timeline" replace />;
@@ -37,8 +35,19 @@ function PublicRoute({ children }) {
 function PrivateRoute({ children }) {
   const { user, loading } = useUser();
 
-  if (loading) return null;
+  if (loading) return <div>Loading...</div>;
   return user ? children : <Navigate to="/login" replace />;
+}
+
+function RequireWaiting({ children }) {
+  const { user, loading } = useUser();
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!user.spaceId) return <Navigate to="/create-space" replace />;
+  if (user.partnerJoined) return <Navigate to="/timeline" replace />;
+
+  return children;
 }
 function RequireSpace({ children }) {
   const { user, loading } = useUser();
@@ -49,21 +58,10 @@ function RequireSpace({ children }) {
 
   return children;
 }
-
-function RequireWaiting({ children }) {
-  const { user, loading } = useUser();
-
-  if (loading) return null;
-  if (!user) return <Navigate to="/login" replace />;
-  if (!user.spaceId) return <Navigate to="/create-space" replace />;
-  if (user.partnerJoined) return <Navigate to="/timeline" replace />;
-
-  return children;
-}
 function RequireTimeline({ children }) {
   const { user, loading } = useUser();
 
-  if (loading) return null;
+  if (loading) return <div>Loading... </div>;
   if (!user) return <Navigate to="/login" replace />;
   if (!user.spaceId) return <Navigate to="/create-space" replace />;
 
@@ -89,9 +87,9 @@ export default function App() {
         <Route
           path="/login"
           element={
-          
+            <PublicRoute>
               <Login />
-          
+            </PublicRoute>
           }
         />
 
