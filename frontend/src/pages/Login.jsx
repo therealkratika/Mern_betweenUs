@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import { loginUser, signInWithGoogle, getGoogleRedirectResult } from "../api/auth";
+import { useForm } from "react-hook-form";
+import {
+  loginUser,
+} from "../api/auth";
 import api from "../api/api";
 import "./Login.css";
 
@@ -9,70 +11,26 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get("invite");
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm();
 
-  /* =========================
-     HANDLE GOOGLE REDIRECT RESULT
-  ========================= */
-  useEffect(() => {
-    const handleRedirect = async () => {
-      try {
-        const result = await getGoogleRedirectResult();
-        if (!result?.user) return;
-
-        if (inviteToken) {
-          await api.post(`/spaces/accept/${inviteToken}`);
-        }
-navigate("/timeline", { replace: true });
-
-      } catch {
-        setError("Google sign-in failed. Try again.");
-      }
-    };
-
-    handleRedirect();
-  }, [inviteToken, navigate]);
-
-  /* =========================
-     EMAIL / PASSWORD LOGIN
-  ========================= */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
+  const onSubmit = async (data) => {
     try {
-      await loginUser(email, password);
+      await loginUser(data.email, data.password);
 
       if (inviteToken) {
         await api.post(`/spaces/accept/${inviteToken}`);
       }
 
       navigate("/timeline", { replace: true });
-
     } catch {
-      setError("Invalid email or password");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /* =========================
-     GOOGLE LOGIN
-  ========================= */
-  const handleGoogleLogin = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      await signInWithGoogle(); 
-      navigate("/timeline", { replace: true });
-
-    } catch {
-      setError("Google sign-in failed. Try again.");
-      setLoading(false);
+      setError("root", {
+        message: "Invalid email or password",
+      });
     }
   };
 
@@ -81,33 +39,36 @@ navigate("/timeline", { replace: true });
       <div className="auth-card">
         <h2>Welcome back</h2>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            placeholder="Email"
+            {...register("email", {
+              required: "Email is required",
+            })}
           />
+          {errors.email && (
+            <p className="auth-error">{errors.email.message}</p>
+          )}
 
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            placeholder="Password"
+            {...register("password", {
+              required: "Password is required",
+            })}
           />
+          {errors.password && (
+            <p className="auth-error">{errors.password.message}</p>
+          )}
 
-          {error && <p className="auth-error">{error}</p>}
+          {/* Backend / global error */}
+          {errors.root && (
+            <p className="auth-error">{errors.root.message}</p>
+          )}
 
-          <button disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-          >
-            Continue with Google
+          <button disabled={isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
 

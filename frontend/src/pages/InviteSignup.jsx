@@ -1,161 +1,65 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import api from "../api/api";
 import { useUser } from "../context/UserContext";
 import { auth } from "../firebase";
-
 import {
   createUserWithEmailAndPassword,
   updateProfile,
-  GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
-    signInWithPopup
 } from "firebase/auth";
-
 import "./InviteSignup.css";
 
 export default function InviteSignup() {
- const { token } = useParams();
+  const { token } = useParams();
   const navigate = useNavigate();
   const { refreshUser } = useUser();
 
   const [step, setStep] = useState("invite");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  /* ---------------- VALIDATION ---------------- */
-  const validate = () => {
-    if (!name.trim()) {
-      setError("Name is required");
-      return false;
-    }
-    if (!email.trim()) {
-      setError("Email is required");
-      return false;
-    }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return false;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return false;
-    }
-    return true;
+  const {
+    register,
+    handleSubmit,
+    setError,
+    getValues,
+    formState: { errors, isSubmitting },
+  } = useForm();
+
+  const handleSuccessfulAuth = async (firebaseUser) => {
+    const tokenId = await firebaseUser.getIdToken();
+
+    await api.post(
+      `/spaces/accept/${token}`,
+      {},
+      { headers: { Authorization: `Bearer ${tokenId}` } }
+    );
+
+    await refreshUser();
+    navigate("/timeline", { replace: true });
   };
-
-  const handleCreateAccount = async () => {
-    if (!validate()) return;
+  const onSubmit = async (data) => {
     try {
-      setLoading(true);
-      setError("");
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
 
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: name });
-
-      const tokenId = await userCredential.user.getIdToken();
-
-      // Accept the space
-      await api.post(`/spaces/accept/${token}`, {}, {
-        headers: { Authorization: `Bearer ${tokenId}` }
+      await updateProfile(userCredential.user, {
+        displayName: data.name,
       });
 
-      // 3. CRITICAL: Update the Global Context so spaceId is recognized
-      await refreshUser(); 
-
-      navigate("/timeline", { replace: true });
-    }catch (err) {
+      await handleSuccessfulAuth(userCredential.user);
+    } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to join space");
-    } finally {
-      setLoading(false);
+      setError("root", {
+        message: err.message || "Failed to join space",
+      });
     }
   };
-const handleGoogleSignup = async () => {
-  setError("");
-  setLoading(true);
-
-  try {
-    const provider = new GoogleAuthProvider();
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      // Mobile: Uses redirect (standard for mobile browsers)
-      await signInWithRedirect(auth, provider);
-    } else {
-      // Desktop: Uses popup (better UX)
-      const result = await signInWithPopup(auth, provider);
-      if (result.user) {
-        // If this is InviteSignup, call your acceptance logic here
-        await handleSuccessfulAuth(result.user);
-      }
-    }
-  } catch (err) {
-    setError("Google login failed");
-    setLoading(false);
-  }
-};
-const handleSuccessfulAuth = async (firebaseUser) => {
-  try {
-    const tokenId = await firebaseUser.getIdToken();
-    
-    // Pass the token DIRECTLY in the headers to avoid 401
-    await api.post(`/spaces/accept/${token}`, {}, {
-      headers: { Authorization: `Bearer ${tokenId}` }
-    });
-
-    // Now sync the context
-    await refreshUser(); 
-    navigate("/timeline", { replace: true });
-  } catch (err) {
-    console.error("Join Error:", err);
-    setError(err.response?.data?.message || "Failed to join space");
-  }
-};
-
-  /* ---------------- HANDLE REDIRECT RESULT ---------------- */
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (!result) return;
-
-        const firebaseUser = result.user;
-
-        if (!firebaseUser.displayName) {
-          await updateProfile(firebaseUser, { displayName: "User" });
-        }
-
-        const tokenId = await firebaseUser.getIdToken();
-
-        await api.post(`/spaces/accept/${token}`, {}, {
-          headers: { Authorization: `Bearer ${tokenId}` }
-        });
-
-        navigate("/timeline", { replace: true });
-
-      } catch (err) {
-        console.error(err);
-        setError("Google signup failed");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    handleRedirectResult();
-  }, [navigate, token]);
-
-  /* ---------------- LOGIN REDIRECT ---------------- */
   const goToLogin = () => {
     navigate(`/login?invite=${token}`);
   };
-
-  /* ---------------- UI ---------------- */
   return (
     <div className="invite-signup-wrapper">
       <div className="invite-card">
@@ -171,10 +75,7 @@ const handleSuccessfulAuth = async (firebaseUser) => {
               Create New Account
             </button>
 
-            <button
-              className="secondary-btn"
-              onClick={goToLogin}
-            >
+            <button className="secondary-btn" onClick={goToLogin}>
               I already have an account
             </button>
 
@@ -189,49 +90,68 @@ const handleSuccessfulAuth = async (firebaseUser) => {
           <>
             <h2>Create your account</h2>
 
-            <input
-              placeholder="Your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <input
+                placeholder="Your name"
+                {...register("name", {
+                  required: "Name is required",
+                })}
+              />
+              {errors.name && (
+                <p className="error">{errors.name.message}</p>
+              )}
 
-            <input
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+              <input
+                placeholder="Email"
+                {...register("email", {
+                  required: "Email is required",
+                })}
+              />
+              {errors.email && (
+                <p className="error">{errors.email.message}</p>
+              )}
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+              <input
+                type="password"
+                placeholder="Password"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
+                })}
+              />
+              {errors.password && (
+                <p className="error">{errors.password.message}</p>
+              )}
 
-            <input
-              type="password"
-              placeholder="Confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+              <input
+                type="password"
+                placeholder="Confirm password"
+                {...register("confirmPassword", {
+                  validate: (value) =>
+                    value === getValues("password") ||
+                    "Passwords do not match",
+                })}
+              />
+              {errors.confirmPassword && (
+                <p className="error">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
 
-            {error && <p className="error">{error}</p>}
+              {errors.root && (
+                <p className="error">{errors.root.message}</p>
+              )}
 
-            <button
-              className="primary-btn"
-              onClick={handleCreateAccount}
-              disabled={loading}
-            >
-              {loading ? "Joining..." : "Join Space"}
-            </button>
-
-            <button
-              className="google-btn"
-              onClick={handleGoogleSignup}
-              disabled={loading}
-            >
-              Continue with Google
-            </button>
+              <button
+                className="primary-btn"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Joining..." : "Join Space"}
+              </button>
+            </form>
 
             <p className="switch-text">
               Already have an account?{" "}

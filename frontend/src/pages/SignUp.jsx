@@ -1,128 +1,81 @@
-import { useEffect, useState } from "react";
+
 import { Link, useNavigate } from "react-router-dom";
-import { registerUser, getGoogleRedirectResult, googlePopup} from "../api/auth";
+import { useForm } from "react-hook-form";
+import {
+  registerUser
+} from "../api/auth";
 import "./Login.css";
 
 export default function Signup() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
   const navigate = useNavigate();
 
-  /* =========================
-     HANDLE GOOGLE REDIRECT
-  ========================= */
-  useEffect(() => {
-    let mounted = true;
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm();
 
-    const handleRedirect = async () => {
-      try {
-        const result = await getGoogleRedirectResult();
-        if (!result?.user) return;
-
-        if (mounted) {
-          navigate("/login", { replace: true });
-
-        }
-      } catch (err) {
-        if (mounted) {
-          console.error(err);
-          setError("Google sign-in failed");
-        }
-      }
-    };
-
-    handleRedirect();
-    return () => (mounted = false);
-  }, [navigate]);
-/* =========================
-    GOOGLE SIGNUP (HYBRID)
-========================= */
-const handleGoogleLogin = async () => {
-  setError("");
-  setLoading(true);
-
-  try {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      await googleRedirect();
-    } else {
-      // Desktop: Use Popup for a better user experience
-      const result = await googlePopup();
-      if (result.user) {
-        // Since there's no redirect, we handle the navigation immediately
-        navigate("/login", { replace: true });
-      }
-    }
-  } catch (err) {
-    console.error(err);
-    setError("Google sign-in failed. Try again.");
-    setLoading(false);
-  }
-};
-  /* =========================
-     EMAIL SIGNUP
-  ========================= */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
+  const onSubmit = async (data) => {
     try {
-      await registerUser(name, email, password);
+      await registerUser(data.name, data.email, data.password);
       navigate("/login", { replace: true });
-
     } catch (err) {
-      setError(err.message || "Signup failed");
-    } finally {
-      setLoading(false);
+      setError("root", {
+        message: err.message || "Signup failed",
+      });
     }
   };
+
 
   return (
     <div className="auth-wrapper">
       <div className="auth-card">
         <h2>Begin your journey</h2>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <input
             placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
+            {...register("name", {
+              required: "Name is required",
+            })}
           />
+          {errors.name && (
+            <p className="auth-error">{errors.name.message}</p>
+          )}
 
           <input
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
+            {...register("email", {
+              required: "Email is required",
+            })}
           />
+          {errors.email && (
+            <p className="auth-error">{errors.email.message}</p>
+          )}
 
           <input
             type="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
+            {...register("password", {
+              required: "Password is required",
+              minLength: {
+                value: 6,
+                message: "Password must be at least 6 characters",
+              },
+            })}
           />
+          {errors.password && (
+            <p className="auth-error">{errors.password.message}</p>
+          )}
 
-          {error && <p className="auth-error">{error}</p>}
+          {/* Global / backend error */}
+          {errors.root && (
+            <p className="auth-error">{errors.root.message}</p>
+          )}
 
-          <button disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-          >
-            Continue with Google
+          <button disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
