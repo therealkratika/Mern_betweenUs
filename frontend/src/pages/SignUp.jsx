@@ -69,7 +69,6 @@ export default function Signup() {
             <p className="auth-error">{errors.password.message}</p>
           )}
 
-          {/* Global / backend error */}
           {errors.root && (
             <p className="auth-error">{errors.root.message}</p>
           )}

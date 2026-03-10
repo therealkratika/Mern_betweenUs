@@ -25,18 +25,20 @@ export default function InviteSignup() {
     formState: { errors, isSubmitting },
   } = useForm();
 
-  const handleSuccessfulAuth = async (firebaseUser) => {
-    const tokenId = await firebaseUser.getIdToken();
+ const handleSuccessfulAuth = async (firebaseUser) => {
+  const tokenId = await firebaseUser.getIdToken();
 
-    await api.post(
-      `/spaces/accept/${token}`,
-      {},
-      { headers: { Authorization: `Bearer ${tokenId}` } }
-    );
+  await api.post(
+    `/spaces/accept/${token}`,
+    {},
+    { headers: { Authorization: `Bearer ${tokenId}` } }
+  );
 
-    await refreshUser();
-    navigate("/timeline", { replace: true });
-  };
+  // 🔥 THIS is critical
+  await refreshUser();
+
+  navigate("/timeline", { replace: true });
+};
   const onSubmit = async (data) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(

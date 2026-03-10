@@ -6,15 +6,28 @@ export default function OnThisDay() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getOnThisDay()
-      .then(setData)
-      .finally(() => setLoading(false));
+    const fetchData = async () => {
+      try {
+        const res = await getOnThisDay();
+        console.log("ON THIS DAY RESPONSE 👉", res); // 👈 IMPORTANT
+        setData(res);
+      } catch (err) {
+        console.error("ON THIS DAY ERROR ❌", err);
+        setError("Failed to load memories");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (loading) return <div className="status">Looking back… ✨</div>;
-  if (!data) return null;
+  if (error) return <div className="status error">{error}</div>;
+  if (!data) return <div className="status">No data found</div>;
 
   const renderMemory = (m) => (
     <div
@@ -22,7 +35,10 @@ export default function OnThisDay() {
       className="otd-card"
       onClick={() => navigate(`/day/${m._id}`)}
     >
-      <img src={m.photos[m.coverPhotoIndex]?.url} alt="" />
+      <img
+        src={m.photos?.[m.coverPhotoIndex]?.url}
+        alt=""
+      />
       <div>
         <p className="date">
           {new Date(m.date).toDateString()}
@@ -38,16 +54,16 @@ export default function OnThisDay() {
 
       <section>
         <h3>💫 Same day in past years</h3>
-        {data.sameDay.length === 0 ? (
+        {data.sameDay?.length === 0 ? (
           <p>No memories for this date yet</p>
         ) : (
-          data.sameDay.map(renderMemory)
+          data.sameDay?.map(renderMemory)
         )}
       </section>
 
       <section>
         <h3>⏪ Recent memories</h3>
-        {data.recent.map(renderMemory)}
+        {data.recent?.map(renderMemory)}
       </section>
     </div>
   );

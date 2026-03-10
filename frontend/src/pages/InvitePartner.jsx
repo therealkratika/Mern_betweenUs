@@ -35,7 +35,7 @@ const handleConfirmInvite = async () => {
     setSent(true);
     navigate("/waiting", { replace: true });
 
-  } catch (err) {
+  } catch {
     setError("Something went wrong. Please try again.");
   } finally {
     setLoading(false);

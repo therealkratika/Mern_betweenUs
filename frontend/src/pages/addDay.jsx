@@ -29,8 +29,6 @@ console.log({
   coverPhotoIndex,
   photos
 });
-
-
   const removePhoto = (index) => {
     const updated = photos.filter((_, i) => i !== index);
     setPhotos(updated);
@@ -55,7 +53,6 @@ console.log({
     photos.map((file) => secureUpload(file))
   );
 
-  // Extract URL if upload returns object
   const photoUrls = uploads.map((upload) =>
     typeof upload === "string" ? upload : upload.url
   );
@@ -89,7 +86,6 @@ console.log({
         </div>
 
         <form onSubmit={handleSubmit}>
-          {/* Date */}
           <div className="field">
             <label>When was this?</label>
             <input
@@ -99,8 +95,6 @@ console.log({
               required
             />
           </div>
-
-          {/* Photos */}
           <div className="field">
             <label>Photos</label>
 

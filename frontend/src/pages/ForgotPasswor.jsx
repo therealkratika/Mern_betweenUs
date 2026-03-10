@@ -1,6 +1,5 @@
 import { useState } from "react";
-import {forgotPassword} from "../api/auth";
-import { auth } from "../firebase";
+import { forgotPassword } from "../api/auth";
 import "./Auth.css";
 
 export default function ForgotPassword() {
@@ -11,10 +10,18 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setMsg("");
     setError("");
 
-    if (!email.includes("@")) {
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      setError("Email is required");
+      return;
+    }
+
+    if (!trimmedEmail.includes("@")) {
       setError("Please enter a valid email");
       return;
     }
@@ -22,11 +29,11 @@ export default function ForgotPassword() {
     setLoading(true);
 
     try {
-      await forgotPassword(email);
+      await forgotPassword(trimmedEmail);
       setMsg("If this email exists, a reset link has been sent.");
     } catch (err) {
-      console.error("FORGOT PASSWORD ERROR ❌", err);
-      setError("Something went wrong. Try again.");
+      console.error("FORGOT PASSWORD ERROR", err);
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -44,9 +51,13 @@ export default function ForgotPassword() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
+          disabled={loading || !!msg}
         />
 
-        <button type="submit" disabled={loading || !!msg}>
+        <button
+          type="submit"
+          disabled={loading || !!msg || !email.trim()}
+        >
           {loading ? "Sending..." : "Send Reset Link"}
         </button>
       </form>

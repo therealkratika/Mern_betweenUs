@@ -101,7 +101,7 @@ router.delete("/:id", auth, async (req, res) => {
     await memory.deleteOne();
     res.json({ message: "Memory deleted successfully" });
   } catch (err) {
-    console.error("DELETE MEMORY ERROR ❌", err);
+    console.error("DELETE MEMORY ERROR", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -134,7 +134,7 @@ router.get("/on-this-day", auth, async (req, res) => {
 
     res.json({ sameDay, recent });
   } catch (err) {
-    console.error("ON THIS DAY ERROR ❌", err);
+    console.error("ON THIS DAY ERROR ", err);
     res.status(500).json({ message: "Server error" });
   }
 });

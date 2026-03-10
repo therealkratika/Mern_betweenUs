@@ -7,7 +7,7 @@ import { useUser } from "../context/UserContext";
 export default function Profile() {
   const navigate = useNavigate();
   const { user, logout } = useUser();
-
+console.log("USER FROM CONTEXT:", user);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -31,9 +31,6 @@ export default function Profile() {
     }
   };
 
-  /* =========================
-     DELETE ACCOUNT
-  ========================= */
   const deleteAccount = async () => {
     if (deleting) return;
 
@@ -45,8 +42,6 @@ export default function Profile() {
 
     try {
       setDeleting(true);
-
-      // ⚠️ Change this if your backend is mounted under /auth
       await api.delete("/auth/delete-account");
 
       alert("Account scheduled for deletion");
@@ -64,8 +59,6 @@ export default function Profile() {
     <div className="profile-wrapper">
       <div className="profile-card">
         <h2>👤 Profile</h2>
-
-        {/* USER INFO */}
         <section>
           <h4>You</h4>
           <p><strong>Name:</strong> {user.name}</p>
@@ -73,14 +66,13 @@ export default function Profile() {
         </section>
 
         <section>
-          <h4>Your Partner</h4>
-          {user.partnerJoined ? (
-            <p><strong>Name:</strong> {user.partnerName}</p>
-          ) : (
-            <p>No partner yet</p>
-          )}
-        </section>
-
+  <h4>Your Partner</h4>
+  {user.partnerJoined ? (
+  <p><strong>Name:</strong> {user.partnerName}</p>
+) : (
+  <p>No partner yet</p>
+)}
+</section>
         <section>
           <h4>Change Password</h4>
 

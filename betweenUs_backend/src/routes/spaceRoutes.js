@@ -97,9 +97,6 @@ router.post("/invite", auth, async (req, res) => {
   }
 });
 
-/* =========================
-   RESEND INVITE
-========================= */
 router.post("/invite/resend", auth, async (req, res) => {
   try {
     const user = req.user;
@@ -191,19 +188,16 @@ router.get("/status", auth, async (req, res) => {
   try {
     const user = req.user;
 
-    // 1️⃣ No space at all
     if (!user.spaceId) {
       return res.json({ state: "NO_SPACE" });
     }
 
     const space = await Space.findById(user.spaceId);
 
-    // 2️⃣ Space exists, no invite, no partner
     if (!space.inviteToken && !space.partnerId) {
       return res.json({ state: "NO_INVITE" });
     }
 
-    // 3️⃣ Invite sent, waiting
     if (space.inviteToken && !space.partnerId) {
       return res.json({
         state: "INVITE_SENT",
@@ -212,7 +206,6 @@ router.get("/status", auth, async (req, res) => {
       });
     }
 
-    // 4️⃣ Partner joined
     return res.json({ state: "PARTNER_JOINED" });
 
   } catch (err) {
