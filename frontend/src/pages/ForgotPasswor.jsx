@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { forgotPassword } from "../api/auth";
 import "./Auth.css";
-
+import { useNavigate } from "react-router-dom";
 export default function ForgotPassword() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
@@ -60,6 +61,9 @@ export default function ForgotPassword() {
         >
           {loading ? "Sending..." : "Send Reset Link"}
         </button>
+        <p className="link" onClick={() => navigate("/login")}>
+          Go to Sign in
+        </p>
       </form>
 
       {msg && <p className="success">{msg}</p>}

@@ -72,13 +72,13 @@ export default function Signup() {
           {errors.root && (
             <p className="auth-error">{errors.root.message}</p>
           )}
-
+          <p className="link" onClick={() => navigate("/login")}>
+            Already have an account? Sign in
+          </p>
           <button disabled={isSubmitting}>
             {isSubmitting ? "Creating account..." : "Create Account"}
           </button>
         </form>
-
-        <Link to="/login">Sign in</Link>
       </div>
     </div>
   );

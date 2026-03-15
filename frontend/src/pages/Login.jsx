@@ -39,7 +39,7 @@ export default function Login() {
       <div className="auth-card">
         <h2>Welcome back</h2>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
           <input
             type="email"
             placeholder="Email"
@@ -66,13 +66,21 @@ export default function Login() {
           {errors.root && (
             <p className="auth-error">{errors.root.message}</p>
           )}
-
+           <p
+            className="forgot-link"
+            onClick={() => navigate("/forgot-password")}
+          >
+            Forgot password?
+          </p>
           <button disabled={isSubmitting}>
             {isSubmitting ? "Signing in..." : "Sign In"}
           </button>
+          
+         <p className="link" onClick={() => navigate("/signup")}>
+            Don't have an account? Sign up
+          </p>
         </form>
 
-        <Link to="/signup">Sign up</Link>
       </div>
     </div>
   );
