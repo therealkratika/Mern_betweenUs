@@ -77,57 +77,66 @@
   transform: translateY(-8px);
   box-shadow: var(--shadow-soft);
 }
-
-/* 4. Filters & Custom Scroll - FIXED for single line */
+/* 4. Filters - Horizontal Row Fix */
 .filters {
   display: flex;
   align-items: center;
-  gap: 16px; /* Space between items */
-  overflow-x: auto; /* Enables horizontal scroll */
-  padding: 15px 5px;
-  margin-bottom: 2rem;
+  /* Allows the pills to go off-screen and scroll instead of stacking */
+  overflow-x: auto; 
+  padding: 20px 10px;
+  gap: 12px; /* Standard gap between all other pills */
   
-  /* Hide scrollbar for a cleaner look while keeping functionality */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-  scroll-behavior: smooth;
+  /* Hides scrollbar for aesthetic */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
 }
 
 .filters::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
 .filter {
-  display: flex;
+  /* This is the key: prevent the pills from shrinking to fit */
+  flex-shrink: 0; 
+  
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* Space between icon and text */
-  padding: 12px 24px;
-  border-radius: 999px; /* Pill shape */
-  border: 2px solid var(--glass-border);
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 999px;
   background: white;
   color: var(--accent-pink);
   font-weight: 600;
-  font-size: 15px;
-  white-space: nowrap; /* Forces text to stay on one line */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  flex-shrink: 0; /* Prevents buttons from squishing */
+  border: 2px solid var(--glass-border);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
 }
 
-.filter:hover {
-  transform: translateY(-3px);
-  border-color: #ffb6d9;
-  box-shadow: 0 6px 15px rgba(255, 182, 217, 0.2);
+/* DISTANCE FROM FIRST 'ALL' PILL */
+.filter:first-child {
+  margin-right: 40px; /* Adjust this number to increase/decrease the gap */
+  position: relative;
+}
+
+/* Optional: Adding a small divider line in that gap */
+.filter:first-child::after {
+  content: '';
+  position: absolute;
+  right: -22px;
+  top: 20%;
+  height: 60%;
+  width: 2px;
+  background: var(--glass-border);
 }
 
 .filter.active {
   background: var(--primary-gradient);
   color: white;
   border-color: transparent;
-  box-shadow: 0 8px 20px rgba(212, 134, 156, 0.4);
+  box-shadow: 0 8px 20px rgba(212, 134, 156, 0.3);
 }
 
 .filter svg, .filter img {
