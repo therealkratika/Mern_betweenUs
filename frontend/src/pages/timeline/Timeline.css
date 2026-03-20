@@ -78,34 +78,64 @@
   box-shadow: var(--shadow-soft);
 }
 
-/* 4. Filters & Custom Scroll */
+/* 4. Filters & Custom Scroll - FIXED for single line */
 .filters {
   display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding: 10px 0;
-  scrollbar-width: none;
+  align-items: center;
+  gap: 16px; /* Space between items */
+  overflow-x: auto; /* Enables horizontal scroll */
+  padding: 15px 5px;
+  margin-bottom: 2rem;
+  
+  /* Hide scrollbar for a cleaner look while keeping functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filters::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
 
 .filter {
-  padding: 10px 22px;
-  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* Space between icon and text */
+  padding: 12px 24px;
+  border-radius: 999px; /* Pill shape */
   border: 2px solid var(--glass-border);
   background: white;
   color: var(--accent-pink);
   font-weight: 600;
-  white-space: nowrap;
-  transition: 0.3s;
+  font-size: 15px;
+  white-space: nowrap; /* Forces text to stay on one line */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  flex-shrink: 0; /* Prevents buttons from squishing */
+}
+
+.filter:hover {
+  transform: translateY(-3px);
+  border-color: #ffb6d9;
+  box-shadow: 0 6px 15px rgba(255, 182, 217, 0.2);
 }
 
 .filter.active {
   background: var(--primary-gradient);
   color: white;
   border-color: transparent;
+  box-shadow: 0 8px 20px rgba(212, 134, 156, 0.4);
 }
 
-/* 5. Memory Cards & Timeline */
+.filter svg, .filter img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
 .timeline-item {
   position: relative;
   padding-left: 50px;
