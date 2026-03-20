@@ -47,7 +47,7 @@ export function TimelineProvider({ children }) {
    return (
   <TimelineContext.Provider
     value={{
-      memories,          // ✅ rename
+      memories,          
       loadTimeline,
       addMemory,
       removeMemory,
