@@ -77,16 +77,17 @@
   transform: translateY(-8px);
   box-shadow: var(--shadow-soft);
 }
-/* 4. Filters - Horizontal Row Fix */
 .filters {
-  display: flex;
+  display: flex !important; 
+  flex-direction: row !important;
+  flex-wrap: nowrap !important; 
   align-items: center;
-  /* Allows the pills to go off-screen and scroll instead of stacking */
-  overflow-x: auto; 
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 12px;
   padding: 20px 10px;
-  gap: 12px; /* Standard gap between all other pills */
+  width: 100%;
   
-  /* Hides scrollbar for aesthetic */
   scrollbar-width: none; 
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
@@ -97,9 +98,7 @@
 }
 
 .filter {
-  /* This is the key: prevent the pills from shrinking to fit */
-  flex-shrink: 0; 
-  
+  flex: 0 0 auto;   
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -110,33 +109,18 @@
   color: var(--accent-pink);
   font-weight: 600;
   border: 2px solid var(--glass-border);
-  white-space: nowrap;
+  white-space: nowrap; 
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0,0,0,0.03);
 }
-
-/* DISTANCE FROM FIRST 'ALL' PILL */
 .filter:first-child {
-  margin-right: 40px; /* Adjust this number to increase/decrease the gap */
-  position: relative;
-}
-
-/* Optional: Adding a small divider line in that gap */
-.filter:first-child::after {
-  content: '';
-  position: absolute;
-  right: -22px;
-  top: 20%;
-  height: 60%;
-  width: 2px;
-  background: var(--glass-border);
+  margin-right: 30px; 
 }
 
 .filter.active {
   background: var(--primary-gradient);
   color: white;
   border-color: transparent;
-  box-shadow: 0 8px 20px rgba(212, 134, 156, 0.3);
 }
 
 .filter svg, .filter img {
