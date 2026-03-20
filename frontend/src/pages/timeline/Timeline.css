@@ -77,17 +77,19 @@
   transform: translateY(-8px);
   box-shadow: var(--shadow-soft);
 }
+/* 4. Filters - Force Horizontal Row */
 .filters {
-  display: flex !important; 
+  display: flex !important; /* Ensure flexbox is active */
   flex-direction: row !important;
-  flex-wrap: nowrap !important; 
+  flex-wrap: nowrap !important; /* CRITICAL: Prevents items from dropping to the next line */
   align-items: center;
-  overflow-x: auto;
+  overflow-x: auto; /* Allows side-scrolling */
   overflow-y: hidden;
   gap: 12px;
   padding: 20px 10px;
-  width: 100%;
+  width: 100%; /* Occupy full container width */
   
+  /* Hide scrollbar while keeping functionality */
   scrollbar-width: none; 
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
@@ -98,7 +100,9 @@
 }
 
 .filter {
-  flex: 0 0 auto;   
+  /* CRITICAL: Prevents the browser from squishing buttons to fit the screen */
+  flex: 0 0 auto; 
+  
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -122,13 +126,6 @@
   color: white;
   border-color: transparent;
 }
-
-.filter svg, .filter img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
-
 .timeline-item {
   position: relative;
   padding-left: 50px;
